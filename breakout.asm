@@ -61,7 +61,8 @@ InitScreen: HALT                    ; wait for vblank
             ; enable display
             ; BG tiles at $8800
             ; map at $9800
-            LD A, %10000000
+            ; sprites enabled
+            LD A, %10000010
             LDH [$40], A
             RET
 
