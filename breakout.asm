@@ -10,7 +10,8 @@ Main:   DI
         CALL InitInterrupts
         EI
         CALL InitScreen
-.loop   JR .loop
+.loop   HALT
+        JR .loop
 
 InitInterrupts: LD A, 1         ; enable vblank
                 LDH [$FF], A
