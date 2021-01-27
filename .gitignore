@@ -1,0 +1,6 @@
+.vscode
+*.swp
+*.gb
+*.o
+*.dll
+*.exe
