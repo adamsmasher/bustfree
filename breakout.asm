@@ -51,8 +51,8 @@ InitScreen: HALT                    ; wait for vblank
             LDH [$40], A
             ; clear tiles and map
             XOR A
-            LD BC, $1000 + $400
-            LD HL, $8800
+            LD BC, $1800 + $400
+            LD HL, $8000
 .loop       LD [HLI], A
             DEC C
             JR NZ, .loop
