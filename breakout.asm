@@ -29,4 +29,9 @@ InitScreen: HALT                    ; wait for vblank
             JR NZ, .loop
             DEC B
             JR NZ, .loop
+            ; enable display
+            ; BG tiles at $8800
+            ; map at $9800
+            LD A, %10000000
+            LDH [$40], A
             RET
