@@ -1,6 +1,8 @@
 SECTION "BallRAM", WRAM0
-BallX:  DS 1
-BallY:  DS 1
+BallX:          DS 1
+BallY:          DS 1
+BallVelocityX:  DS 1
+BallVelocityY:  DS 1
 
 SECTION "ShadowOAM", WRAM0, ALIGN[8]
 ShadowOAM: DS 4 * 40
@@ -69,7 +71,8 @@ Main:   DI
         CALL LoadBallGfx
         CALL InitBall
         CALL TurnOnScreen
-.loop   CALL SetupBallOAM
+.loop   CALL UpdateBall
+        CALL SetupBallOAM
         HALT
         JR .loop
 
@@ -107,6 +110,19 @@ TurnOnScreen:   ; enable display
 InitBall:       LD A, 128
                 LD [BallX], A
                 LD [BallY], A
+                LD A, 1
+                LD [BallVelocityX], A
+                LD [BallVelocityY], A
+                RET
+
+UpdateBall:     LD A, [BallVelocityX]
+                LD HL, BallX
+                ADD [HL]
+                LD [HL], A
+                LD A, [BallVelocityY]
+                LD HL, BallY
+                ADD [HL]
+                LD [HL], A
                 RET
 
 SetupBallOAM:   LD HL, ShadowOAM
