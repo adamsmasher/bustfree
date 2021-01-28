@@ -19,6 +19,27 @@ VBlank: PUSH AF
         POP AF
         RETI
 
+SECTION "BallTileData", ROM0
+BallTileData:
+DW `00011000
+DW `00122100
+DW `01233210
+DW `12333321
+DW `12333321
+DW `01233210
+DW `00122100
+DW `00011000
+
+LoadBallGfx:    LD HL, BallTileData
+                LD DE, $8000
+                LD B, 16
+.loop           LD A, [HLI]
+                LD [DE], A
+                INC E
+                DEC B
+                JR NZ, .loop
+                RET
+
 SECTION "OAMDMA", ROM0
 
 OAMDMACode:
@@ -58,6 +79,7 @@ InitScreen: HALT                    ; wait for vblank
             JR NZ, .loop
             DEC B
             JR NZ, .loop
+            CALL LoadBallGfx
             ; enable display
             ; BG tiles at $8800
             ; map at $9800
