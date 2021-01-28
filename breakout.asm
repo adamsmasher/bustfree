@@ -59,7 +59,10 @@ Main:   DI
         CALL InitInterrupts
         CALL InitShadowOAM
         EI
-        CALL InitScreen
+        CALL TurnOffScreen
+        CALL ClearVRAM
+        CALL LoadBallGfx
+        CALL TurnOnScreen
 .loop   HALT
         JR .loop
 
@@ -67,26 +70,28 @@ InitInterrupts: LD A, 1         ; enable vblank
                 LDH [$FF], A
                 RET
 
-InitScreen: HALT                    ; wait for vblank
-            XOR A                   ; turn the screen off
-            LDH [$40], A
-            ; clear tiles and map
-            XOR A
-            LD BC, $1800 + $400
-            LD HL, $8000
-.loop       LD [HLI], A
-            DEC C
-            JR NZ, .loop
-            DEC B
-            JR NZ, .loop
-            CALL LoadBallGfx
-            ; enable display
-            ; BG tiles at $8800
-            ; map at $9800
-            ; sprites enabled
-            LD A, %10000010
-            LDH [$40], A
-            RET
+TurnOffScreen:  HALT                    ; wait for vblank
+                XOR A                   ; turn the screen off
+                LDH [$40], A
+                RET
+
+ClearVRAM:      XOR A
+                LD BC, $1800 + $400     ; tiles + map
+                LD HL, $8000
+.loop           LD [HLI], A
+                DEC C
+                JR NZ, .loop
+                DEC B
+                JR NZ, .loop
+                RET
+
+TurnOnScreen:   ; enable display
+                ; BG tiles at $8800
+                ; map at $9800
+                ; sprites enabled
+                LD A, %10000010
+                LDH [$40], A
+                RET
 
 InitShadowOAM:  ; clear shadow OAM
                 XOR A
