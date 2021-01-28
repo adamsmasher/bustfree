@@ -65,6 +65,7 @@ Main:   DI
         EI
         CALL TurnOffScreen
         CALL ClearVRAM
+        CALL InitPalette
         CALL LoadBallGfx
         CALL InitBall
         CALL TurnOnScreen
@@ -89,6 +90,10 @@ ClearVRAM:      XOR A
                 JR NZ, .loop
                 DEC B
                 JR NZ, .loop
+                RET
+
+InitPalette:    LD A, %11100100
+                LDH [$48], A
                 RET
 
 TurnOnScreen:   ; enable display
