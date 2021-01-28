@@ -1,3 +1,7 @@
+SECTION "BallRAM", WRAM0
+BallX:  DS 1
+BallY:  DS 1
+
 SECTION "ShadowOAM", WRAM0, ALIGN[8]
 ShadowOAM: DS 4 * 40
 
@@ -62,8 +66,10 @@ Main:   DI
         CALL TurnOffScreen
         CALL ClearVRAM
         CALL LoadBallGfx
+        CALL InitBall
         CALL TurnOnScreen
-.loop   HALT
+.loop   CALL SetupBallOAM
+        HALT
         JR .loop
 
 InitInterrupts: LD A, 1         ; enable vblank
@@ -91,6 +97,18 @@ TurnOnScreen:   ; enable display
                 ; sprites enabled
                 LD A, %10000010
                 LDH [$40], A
+                RET
+
+InitBall:       LD A, 128
+                LD [BallX], A
+                LD [BallY], A
+                RET
+
+SetupBallOAM:   LD HL, ShadowOAM
+                LD A, [BallY]
+                LD [HLI], A
+                LD A, [BallX]
+                LD [HL], A
                 RET
 
 InitShadowOAM:  ; clear shadow OAM
