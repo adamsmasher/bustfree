@@ -1,8 +1,8 @@
 SECTION "BallRAM", WRAM0
 BallX:          DS 2
 BallY:          DS 2
-BallVelocityX:  DS 1
-BallVelocityY:  DS 1
+BallVelocityX:  DS 2
+BallVelocityY:  DS 2
 
 SECTION "ShadowOAM", WRAM0, ALIGN[8]
 ShadowOAM: DS 4 * 40
@@ -119,40 +119,56 @@ InitBall:       ; init ball x
                 LD [HLI], A
                 LD A, 128
                 LD [HL], A
-                ; setup velocity (1.5px)
-                LD A, %10000001
-                LD [BallVelocityX], A
-                LD [BallVelocityY], A
+                ; setup velocity X (1.5px)
+                LD HL, BallVelocityX
+                LD A, $80
+                LD [HLI], A
+                LD A, 1
+                LD [HL], A
+                ; setup velocity Y (1.5px)
+                LD HL, BallVelocityY
+                LD A, $80
+                LD [HLI], A
+                LD A, 1
+                LD [HL], A
                 RET
 
-UpdateBall:     ; update ball X
-                LD A, [BallVelocityX]
-                AND $F0                 ; strip out pixels from velocity
+UpdateBallX:    LD HL, BallVelocityX
+                LD A, [HLI]
+                LD B, [HL]
+                LD C, A
                 LD HL, BallX
-                ADD [HL]
+                LD A, [HLI]
+                LD H, [HL]
+                LD L, A
+                ADD HL, BC
+                LD B, H
+                LD A, L
+                LD HL, BallX
                 LD [HLI], A
-                JR NC, .ncX
-                INC [HL]
-.ncX            LD A, [BallVelocityX]
-                AND $0F                 ; strip out subpixels
-                ADD [HL]
-                LD [HL], A
-
-                ; update ball Y
-                LD A, [BallVelocityY]
-                AND $F0                 ; strip out pixels from velocity
-                LD HL, BallY
-                ADD [HL]
-                LD [HLI], A
-                JR NC, .ncY
-                INC [HL]
-.ncY            LD A, [BallVelocityY]
-                AND $0F                 ; strip out subpixels
-                ADD [HL]
-                LD [HL], A
-
+                LD [HL], B
                 RET
 
+UpdateBallY:    LD HL, BallVelocityY
+                LD A, [HLI]
+                LD B, [HL]
+                LD C, A
+                LD HL, BallY
+                LD A, [HLI]
+                LD H, [HL]
+                LD L, A
+                ADD HL, BC
+                LD B, H
+                LD A, L
+                LD HL, BallY
+                LD [HLI], A
+                LD [HL], B
+                RET
+
+UpdateBall:     CALL UpdateBallX
+                CALL UpdateBallY
+                RET
+                
 SetupBallOAM:   LD HL, ShadowOAM
                 LD A, [BallY+1]
                 LD [HLI], A
