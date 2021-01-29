@@ -133,7 +133,17 @@ InitBall:       ; init ball x
                 LD [HL], A
                 RET
 
-UpdateBallX:    LD HL, BallVelocityX
+NegateHL:       LD A, [HL]
+                CPL
+                INC A
+                LD [HLI], A
+                LD A, [HL]
+                CPL
+                LD [HL], A
+                RET
+
+UpdateBallX:    ; add velocity to position
+                LD HL, BallVelocityX
                 LD A, [HLI]
                 LD B, [HL]
                 LD C, A
@@ -142,6 +152,28 @@ UpdateBallX:    LD HL, BallVelocityX
                 LD H, [HL]
                 LD L, A
                 ADD HL, BC
+                ; check for left side collision
+                LD A, H
+                CP 8
+                JR NC, .nc
+                ; we collided, so negate velocity
+                LD HL, BallVelocityX
+                CALL NegateHL
+                ; new X position is left side of the screen
+                LD H, 8
+                LD L, 0
+                JR .writeback
+                ; check for right side collision
+.nc             LD A, H
+                CP 160
+                JR C, .writeback
+                ; we collided, so negate velocity
+                LD HL, BallVelocityX
+                CALL NegateHL
+                ; new X position is just right of the screen
+                LD H, 159
+                LD L, $FF
+.writeback      ; write back X position
                 LD B, H
                 LD A, L
                 LD HL, BallX
@@ -149,7 +181,8 @@ UpdateBallX:    LD HL, BallVelocityX
                 LD [HL], B
                 RET
 
-UpdateBallY:    LD HL, BallVelocityY
+UpdateBallY:    ; add velocity to position
+                LD HL, BallVelocityY
                 LD A, [HLI]
                 LD B, [HL]
                 LD C, A
@@ -158,6 +191,28 @@ UpdateBallY:    LD HL, BallVelocityY
                 LD H, [HL]
                 LD L, A
                 ADD HL, BC
+                ; check for top side collision
+                LD A, H
+                CP 16
+                JR NC, .nc
+                ; we collided, so negate velocity
+                LD HL, BallVelocityY
+                CALL NegateHL
+                ; new Y position is left side of the screen
+                LD H, 16
+                LD L, 0
+                JR .writeback
+                ; check for bottom side collision
+.nc             LD A, H
+                CP 152
+                JR C, .writeback
+                ; we collided, so negate velocity
+                LD HL, BallVelocityY
+                CALL NegateHL
+                ; new Y position is just above bottom of the screen
+                LD H, 151
+                LD L, $FF
+.writeback      ; write back Y position
                 LD B, H
                 LD A, L
                 LD HL, BallY
