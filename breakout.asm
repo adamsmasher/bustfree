@@ -1,8 +1,15 @@
+PADDLE_Y        EQU 128
+PADDLE_TILE     EQU 1
+
 SECTION "BallRAM", WRAM0
 BallX:          DS 2
 BallY:          DS 2
 BallVelocityX:  DS 2
 BallVelocityY:  DS 2
+
+SECTION "PaddleRAM", WRAM0
+PaddleX:                DS 2
+PaddleVelocityX:        DS 2
 
 SECTION "ShadowOAM", WRAM0, ALIGN[8]
 ShadowOAM: DS 4 * 40
@@ -25,7 +32,8 @@ VBlank: PUSH AF
         POP AF
         RETI
 
-SECTION "BallTileData", ROM0
+SECTION "SpriteData", ROM0
+SpriteData:
 BallTileData:
 DW `00011000
 DW `00122100
@@ -36,9 +44,19 @@ DW `01233210
 DW `00122100
 DW `00011000
 
-LoadBallGfx:    LD HL, BallTileData
+PaddleTileData:
+DW `01111111
+DW `12333333
+DW `12333333
+DW `12333333
+DW `12333333
+DW `12333333
+DW `12333333
+DW `01111111
+
+LoadSpriteGfx:  LD HL, SpriteData
                 LD DE, $8000
-                LD B, 16
+                LD B, 32
 .loop           LD A, [HLI]
                 LD [DE], A
                 INC E
@@ -68,11 +86,14 @@ Main:   DI
         CALL TurnOffScreen
         CALL ClearVRAM
         CALL InitPalette
-        CALL LoadBallGfx
+        CALL LoadSpriteGfx
         CALL InitBall
+        Call InitPaddle
         CALL TurnOnScreen
 .loop   CALL UpdateBall
+        CALL UpdatePaddle
         CALL SetupBallOAM
+        CALL SetupPaddleOAM
         HALT
         JR .loop
 
@@ -130,6 +151,19 @@ InitBall:       ; init ball x
                 LD A, $80
                 LD [HLI], A
                 LD A, 1
+                LD [HL], A
+                RET
+
+InitPaddle:     ; init paddle x
+                LD HL, PaddleX
+                XOR A                   ; subpixels = 0
+                LD [HLI], A
+                LD A, 128               ; pixels = 128
+                LD [HL], A
+                ; setup velocity X
+                LD HL, PaddleVelocityX
+                XOR A
+                LD [HLI], A
                 LD [HL], A
                 RET
 
@@ -223,11 +257,32 @@ UpdateBallY:    ; add velocity to position
 UpdateBall:     CALL UpdateBallX
                 CALL UpdateBallY
                 RET
+
+UpdatePaddle:   RET
                 
 SetupBallOAM:   LD HL, ShadowOAM
                 LD A, [BallY+1]
                 LD [HLI], A
                 LD A, [BallX+1]
+                LD [HL], A
+                RET
+
+SetupPaddleOAM: LD HL, ShadowOAM + 4
+                LD A, PADDLE_Y
+                LD [HLI], A
+                LD A, [PaddleX+1]
+                LD [HLI], A
+                LD A, PADDLE_TILE
+                LD [HLI], A
+                INC L
+                LD A, PADDLE_Y
+                LD [HLI], A
+                LD A, [PaddleX+1]
+                ADD 8
+                LD [HLI], A
+                LD A, PADDLE_TILE
+                LD [HLI], A
+                LD A, %00100000         ; flip X
                 LD [HL], A
                 RET
 
