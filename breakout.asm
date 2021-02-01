@@ -213,13 +213,10 @@ UpdateBallY:    CALL ApplyBallVelocityY
 .checkBottom    LD A, H
                 CP 152
                 JR C, .checkPaddle
-                ; we collided, so negate velocity
-                LD HL, BallVelocityY
-                CALL NegateHL
-                ; new Y position is just above bottom of the screen
-                LD H, 151
-                LD L, $FF
-                JR .writeback
+                ; we collided, so end game
+                LD A, BALL_ON_PADDLE
+                LD [BallState], A
+                RET
 .checkPaddle    ADD BALL_HEIGHT/2
                 CP PADDLE_Y
                 JR C, .writeback
