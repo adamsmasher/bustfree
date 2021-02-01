@@ -4,10 +4,11 @@ INCLUDE "input.inc"
 
 PADDLE_Y        EQU 128
 PADDLE_WIDTH    EQU 24
-PADDLE_HEIGHT   EQU 8
+PADDLE_HEIGHT   EQU 4
 PADDLE_TILE     EQU 1
 
 BALL_WIDTH      EQU 8
+BALL_HEIGHT     EQU 8
 
 SECTION "BallRAM", WRAM0
 BallX:          DS 2
@@ -214,7 +215,8 @@ UpdateBallY:    CALL ApplyBallVelocityY
                 LD H, 151
                 LD L, $FF
                 JR .writeback
-.checkPaddle    CP PADDLE_Y
+.checkPaddle    ADD BALL_HEIGHT/2
+                CP PADDLE_Y
                 JR C, .writeback
                 CP PADDLE_Y + PADDLE_HEIGHT
                 JR NC, .writeback
@@ -231,7 +233,7 @@ UpdateBallY:    CALL ApplyBallVelocityY
                 LD HL, BallVelocityY
                 CALL NegateHL
                 ; new Y position is just above the paddle
-                LD H, PADDLE_Y - 1
+                LD H, PADDLE_Y - BALL_HEIGHT - 1
                 LD L, $FF
 .writeback      ; write back Y position
                 LD B, H
