@@ -3,7 +3,7 @@ INCLUDE "input.inc"
 
 
 PADDLE_Y        EQU 128
-PADDLE_WIDTH    EQU 16
+PADDLE_WIDTH    EQU 24
 PADDLE_HEIGHT   EQU 8
 PADDLE_TILE     EQU 1
 
@@ -318,7 +318,8 @@ SetupBallOAM:   LD HL, ShadowOAM
                 LD [HL], A
                 RET
 
-SetupPaddleOAM: LD HL, ShadowOAM + 4
+SetupPaddleOAM: ; left
+                LD HL, ShadowOAM + 4
                 LD A, PADDLE_Y
                 LD [HLI], A
                 LD A, [PaddleX+1]
@@ -326,10 +327,20 @@ SetupPaddleOAM: LD HL, ShadowOAM + 4
                 LD A, PADDLE_TILE
                 LD [HLI], A
                 INC L
+                ; center
                 LD A, PADDLE_Y
                 LD [HLI], A
                 LD A, [PaddleX+1]
                 ADD 8
+                LD [HLI], A
+                LD A, PADDLE_TILE + 1
+                LD [HLI], A
+                INC L
+                ; right
+                LD A, PADDLE_Y
+                LD [HLI], A
+                LD A, [PaddleX+1]
+                ADD 16
                 LD [HLI], A
                 LD A, PADDLE_TILE
                 LD [HLI], A

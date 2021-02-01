@@ -20,9 +20,19 @@ DW `12333333
 DW `12333333
 DW `01111111
 
+DW `11111111
+DW `33333333
+DW `33333333
+DW `33333333
+DW `33333333
+DW `33333333
+DW `33333333
+DW `11111111
+SpriteDataEnd:
+
 LoadSpriteGfx:: LD HL, SpriteData
                 LD DE, $8000
-                LD B, 32
+                LD B, SpriteDataEnd - SpriteData
 .loop           LD A, [HLI]
                 LD [DE], A
                 INC E
