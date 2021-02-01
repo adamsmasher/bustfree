@@ -131,16 +131,19 @@ NegateHL:       LD A, [HL]
                 LD [HL], A
                 RET
 
-UpdateBallX:    ; add velocity to position
-                LD HL, BallVelocityX
-                LD A, [HLI]
-                LD B, [HL]
-                LD C, A
-                LD HL, BallX
-                LD A, [HLI]
-                LD H, [HL]
-                LD L, A
-                ADD HL, BC
+; returns new position in HL
+ApplyBallVelocityX:     LD HL, BallVelocityX
+                        LD A, [HLI]
+                        LD B, [HL]
+                        LD C, A
+                        LD HL, BallX
+                        LD A, [HLI]
+                        LD H, [HL]
+                        LD L, A
+                        ADD HL, BC
+                        RET
+
+UpdateBallX:    CALL ApplyBallVelocityX
                 ; check for left side collision
                 LD A, H
                 CP 8
@@ -170,16 +173,19 @@ UpdateBallX:    ; add velocity to position
                 LD [HL], B
                 RET
 
-UpdateBallY:    ; add velocity to position
-                LD HL, BallVelocityY
-                LD A, [HLI]
-                LD B, [HL]
-                LD C, A
-                LD HL, BallY
-                LD A, [HLI]
-                LD H, [HL]
-                LD L, A
-                ADD HL, BC
+; returns new position in HL
+ApplyBallVelocityY:     LD HL, BallVelocityY
+                        LD A, [HLI]
+                        LD B, [HL]
+                        LD C, A
+                        LD HL, BallY
+                        LD A, [HLI]
+                        LD H, [HL]
+                        LD L, A
+                        ADD HL, BC
+                        RET
+
+UpdateBallY:    CALL ApplyBallVelocityY
                 ; check for top side collision
                 LD A, H
                 CP 16
