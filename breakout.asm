@@ -1,7 +1,13 @@
 INCLUDE "input.inc"
 
+
+
 PADDLE_Y        EQU 128
+PADDLE_WIDTH    EQU 16
+PADDLE_HEIGHT   EQU 8
 PADDLE_TILE     EQU 1
+
+BALL_WIDTH      EQU 8
 
 SECTION "BallRAM", WRAM0
 BallX:          DS 2
@@ -189,7 +195,7 @@ UpdateBallY:    CALL ApplyBallVelocityY
                 ; check for top side collision
                 LD A, H
                 CP 16
-                JR NC, .nc
+                JR NC, .checkBottom
                 ; we collided, so negate velocity
                 LD HL, BallVelocityY
                 CALL NegateHL
@@ -198,14 +204,34 @@ UpdateBallY:    CALL ApplyBallVelocityY
                 LD L, 0
                 JR .writeback
                 ; check for bottom side collision
-.nc             LD A, H
+.checkBottom    LD A, H
                 CP 152
-                JR C, .writeback
+                JR C, .checkPaddle
                 ; we collided, so negate velocity
                 LD HL, BallVelocityY
                 CALL NegateHL
                 ; new Y position is just above bottom of the screen
                 LD H, 151
+                LD L, $FF
+                JR .writeback
+.checkPaddle    CP PADDLE_Y
+                JR C, .writeback
+                CP PADDLE_Y + PADDLE_HEIGHT
+                JR NC, .writeback
+                LD A, [BallX+1]
+                ADD BALL_WIDTH/2
+                LD B, A
+                LD A, [PaddleX+1]
+                CP B
+                JR NC, .writeback
+                ADD PADDLE_WIDTH
+                CP B
+                JR C, .writeback
+                ; we collided, so negate velocity
+                LD HL, BallVelocityY
+                CALL NegateHL
+                ; new Y position is just above the paddle
+                LD H, PADDLE_Y - 1
                 LD L, $FF
 .writeback      ; write back Y position
                 LD B, H
