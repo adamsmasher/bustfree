@@ -1,7 +1,5 @@
 INCLUDE "input.inc"
 
-
-
 PADDLE_Y        EQU 128
 PADDLE_WIDTH    EQU 24
 PADDLE_HEIGHT   EQU 4
@@ -10,11 +8,15 @@ PADDLE_TILE     EQU 1
 BALL_WIDTH      EQU 8
 BALL_HEIGHT     EQU 8
 
+BALL_ON_PADDLE  EQU 0
+BALL_MOVING     EQU 1
+
 SECTION "BallRAM", WRAM0
 BallX:          DS 2
 BallY:          DS 2
 BallVelocityX:  DS 2
 BallVelocityY:  DS 2
+BallState:      DS 1
 
 SECTION "PaddleRAM", WRAM0
 PaddleX:                DS 2
@@ -108,12 +110,15 @@ InitBall:       ; init ball x
                 LD [HLI], A
                 LD A, 1
                 LD [HL], A
-                ; setup velocity Y (1.5px)
+                ; setup velocity Y (-1.5px)
                 LD HL, BallVelocityY
                 LD A, $80
                 LD [HLI], A
-                LD A, 1
+                LD A, $FE
                 LD [HL], A
+                ; set ball state
+                LD A, BALL_ON_PADDLE
+                LD [BallState], A
                 RET
 
 InitPaddle:     ; init paddle x
@@ -243,16 +248,45 @@ UpdateBallY:    CALL ApplyBallVelocityY
                 LD [HL], B
                 RET
 
-UpdateBall:     CALL UpdateBallX
-                CALL UpdateBallY
+UpdateBall:     LD A, [BallState]
+                CP BALL_ON_PADDLE
+                JP Z, UpdateBallOnPaddle
+                JP UpdateBallMoving
+
+UpdateBallMoving:       CALL UpdateBallX
+                        CALL UpdateBallY
+                        RET
+
+LaunchBall:     LD A, BALL_MOVING
+                LD [BallState], A
                 RET
 
-HandleInput:    LD A, [KeysDown]
-                BIT INPUT_LEFT, A
-                JP Z, MoveLeft
-                BIT INPUT_RIGHT, A
-                JP Z, MoveRight
-                JP StopPaddle
+PutBallOntoPaddle:      LD HL, BallX
+                        XOR A
+                        LD [HLI], A
+                        LD A, [PaddleX+1]
+                        ADD PADDLE_WIDTH/2 - BALL_WIDTH/2
+                        LD [HL], A
+                        LD HL, BallY
+                        XOR A
+                        LD [HLI], A
+                        LD A, PADDLE_Y
+                        SUB BALL_HEIGHT
+                        LD [HL], A
+                        RET
+
+UpdateBallOnPaddle:     CALL PutBallOntoPaddle
+                        LD A, [KeysDown]
+                        BIT INPUT_A, A
+                        JP Z, LaunchBall
+                        RET
+
+HandlePaddleInput:      LD A, [KeysDown]
+                        BIT INPUT_LEFT, A
+                        JP Z, MoveLeft
+                        BIT INPUT_RIGHT, A
+                        JP Z, MoveRight
+                        JP StopPaddle
 
 UpdatePaddleX:  ; add velocity to position
                 LD HL, PaddleVelocityX
@@ -289,7 +323,7 @@ UpdatePaddleX:  ; add velocity to position
                 LD [HL], B
                 RET
 
-UpdatePaddle:   CALL HandleInput
+UpdatePaddle:   CALL HandlePaddleInput
                 CALL UpdatePaddleX
                 RET
 
