@@ -46,21 +46,22 @@ InitBall::  ; init ball x
             LD [BallState], A
             RET
 
-NegateHL:   LD A, [HL]
+Reflect:    MACRO
+            LD HL, \1
+            LD A, [HL]
             CPL
             INC A
             LD [HLI], A
             LD A, [HL]
             CPL
             LD [HL], A
-            RET
+ENDM
 
 CheckLeftCollide:   LD A, [BallX+1]
                     CP 8
                     RET NC
-                    ; we collided, so negate velocity and reposition
-                    LD HL, BallVelocityX
-                    CALL NegateHL
+                    ; we collided, so reflect and reposition
+                    Reflect BallVelocityX
                     ; new X position is left side of the screen
                     LD HL, BallX
                     XOR A
@@ -72,9 +73,8 @@ CheckLeftCollide:   LD A, [BallX+1]
 CheckRightCollide:  LD A, [BallX+1]
                     CP 160
                     RET C
-                    ; we collided, so negate velocity and reposition
-                    LD HL, BallVelocityX
-                    CALL NegateHL
+                    ; we collided, so reflect and reposition
+                    Reflect BallVelocityX
                     ; new X position is just left of the right of the screen
                     LD HL, BallX
                     LD A, $FF
@@ -107,9 +107,8 @@ CheckPaddleCollide: LD A, [BallY+1]
                     ADD PADDLE_WIDTH
                     CP B
                     RET C
-                    ; we collided, so negate velocity and reposition
-                    LD HL, BallVelocityY
-                    CALL NegateHL
+                    ; we collided, so reflect and reposition
+                    Reflect BallVelocityY
                     ; new Y position is just above the paddle
                     LD HL, BallY
                     LD A, $FF
@@ -121,9 +120,8 @@ CheckPaddleCollide: LD A, [BallY+1]
 CheckTopCollide:    LD A, [BallY+1]
                     CP 16
                     RET NC
-                    ; we collided, so negate velocity and reposition
-                    LD HL, BallVelocityY
-                    CALL NegateHL
+                    ; we collided, so reflect and reposition
+                    Reflect BallVelocityY
                     ; new Y position is just below top of the screen
                     LD HL, BallY
                     XOR A
