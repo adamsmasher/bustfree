@@ -27,8 +27,7 @@ HandleInput:    LD A, [KeysDown]
                 JP Z, MoveRight
                 JP StopPaddle
 
-UpdatePaddleX:  ; add velocity to position
-                LD HL, PaddleVelocityX
+ApplyVelocity:  LD HL, PaddleVelocityX
                 LD A, [HLI]
                 LD B, [HL]
                 LD C, A
@@ -37,29 +36,38 @@ UpdatePaddleX:  ; add velocity to position
                 LD H, [HL]
                 LD L, A
                 ADD HL, BC
-                ; check for left side collision
-                LD A, H
-                CP 8
-                JR NC, .nc
-                ; we collided, so stop moving
-                ; new X position is left side of the screen
-                LD H, 8
-                LD L, 0
-                JR .writeback
-                ; check for right side collision
-.nc             LD A, H
-                CP 160 - PADDLE_WIDTH + 8
-                JR C, .writeback
-                ; we collided, so stop moving
-                ; new X position is just right of the screen
-                LD H, 160 - PADDLE_WIDTH + 8 - 1
-                LD L, $FF
-.writeback      ; write back X position
-                LD B, H
                 LD A, L
-                LD HL, PaddleX
-                LD [HLI], A
-                LD [HL], B
+                LD [PaddleX], A
+                LD A, H
+                LD [PaddleX+1], A
+                RET
+
+CheckLeftCollide:   LD A, [PaddleX+1]
+                    CP 8
+                    RET NC
+                    ; we collided, put back on-screen
+                    LD HL, PaddleX
+                    XOR A
+                    LD [HLI], A
+                    LD A, 8
+                    LD [HL], A
+                    RET
+
+CheckRightCollide:  LD A, [PaddleX+1]
+                    CP 160 - PADDLE_WIDTH + 8
+                    RET C
+                    ; we collided, put back on-screen
+                    ; new X position is just right of the screen
+                    LD HL, PaddleX
+                    LD A, $FF
+                    LD [HLI], A
+                    LD A, 160 - PADDLE_WIDTH + 8 - 1
+                    LD [HL], A
+                    RET
+
+UpdatePaddleX:  CALL ApplyVelocity
+                CALL CheckLeftCollide
+                CALL CheckRightCollide
                 RET
 
 UpdatePaddle::  CALL HandleInput
