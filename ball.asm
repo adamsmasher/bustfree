@@ -131,7 +131,7 @@ CheckTopCollide:    LD A, [BallY+1]
                     RET
 
 CheckBottomCollide: LD A, [BallY+1]
-                    CP 152
+                    CP 160
                     RET C
                     ; we collided, so end game
                     LD A, BALL_ON_PADDLE
