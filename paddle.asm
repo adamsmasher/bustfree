@@ -1,3 +1,4 @@
+INCLUDE "entity.inc"
 INCLUDE "input.inc"
 INCLUDE "paddle.inc"
 
@@ -27,21 +28,6 @@ HandleInput:    LD A, [KeysDown]
                 JP Z, MoveRight
                 JP StopPaddle
 
-ApplyVelocity:  LD HL, PaddleVelocityX
-                LD A, [HLI]
-                LD B, [HL]
-                LD C, A
-                LD HL, PaddleX
-                LD A, [HLI]
-                LD H, [HL]
-                LD L, A
-                ADD HL, BC
-                LD A, L
-                LD [PaddleX], A
-                LD A, H
-                LD [PaddleX+1], A
-                RET
-
 CheckLeftCollide:   LD A, [PaddleX+1]
                     CP 8
                     RET NC
@@ -65,7 +51,7 @@ CheckRightCollide:  LD A, [PaddleX+1]
                     LD [HL], A
                     RET
 
-UpdatePaddleX:  CALL ApplyVelocity
+UpdatePaddleX:  ApplyVelocity PaddleVelocityX, PaddleX
                 CALL CheckLeftCollide
                 CALL CheckRightCollide
                 RET

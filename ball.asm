@@ -1,3 +1,4 @@
+INCLUDE "entity.inc"
 INCLUDE "input.inc"
 INCLUDE "paddle.inc"
 
@@ -54,36 +55,6 @@ NegateHL:   LD A, [HL]
             LD [HL], A
             RET
 
-ApplyVelocityX:     LD HL, BallVelocityX
-                    LD A, [HLI]
-                    LD B, [HL]
-                    LD C, A
-                    LD HL, BallX
-                    LD A, [HLI]
-                    LD H, [HL]
-                    LD L, A
-                    ADD HL, BC
-                    LD A, L
-                    LD [BallX], A
-                    LD A, H
-                    LD [BallX+1], A
-                    RET
-
-ApplyVelocityY:     LD HL, BallVelocityY
-                    LD A, [HLI]
-                    LD B, [HL]
-                    LD C, A
-                    LD HL, BallY
-                    LD A, [HLI]
-                    LD H, [HL]
-                    LD L, A
-                    ADD HL, BC
-                    LD A, L
-                    LD [BallY], A
-                    LD A, H
-                    LD [BallY+1], A
-                    RET
-
 CheckLeftCollide:   LD A, [BallX+1]
                     CP 8
                     RET NC
@@ -112,7 +83,7 @@ CheckRightCollide:  LD A, [BallX+1]
                     LD [HL], A
                     RET
 
-UpdateBallX:    CALL ApplyVelocityX
+UpdateBallX:    ApplyVelocity BallVelocityX, BallX
                 CALL CheckLeftCollide
                 CALL CheckRightCollide
                 RET
@@ -169,7 +140,7 @@ CheckBottomCollide: LD A, [BallY+1]
                     LD [BallState], A
                     RET
 
-UpdateBallY:    CALL ApplyVelocityY
+UpdateBallY:    ApplyVelocity BallVelocityY, BallY
                 CALL CheckPaddleCollide
                 CALL CheckTopCollide
                 CALL CheckBottomCollide
