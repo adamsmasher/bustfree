@@ -306,11 +306,11 @@ UpdatePaddleX:  ; add velocity to position
                 JR .writeback
                 ; check for right side collision
 .nc             LD A, H
-                CP 152
+                CP 160 - PADDLE_WIDTH + 8
                 JR C, .writeback
                 ; we collided, so stop moving
                 ; new X position is just right of the screen
-                LD H, 151
+                LD H, 160 - PADDLE_WIDTH + 8 - 1
                 LD L, $FF
 .writeback      ; write back X position
                 LD B, H
