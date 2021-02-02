@@ -54,106 +54,125 @@ NegateHL:   LD A, [HL]
             LD [HL], A
             RET
 
-; returns new position in HL
-ApplyBallVelocityX:     LD HL, BallVelocityX
-                        LD A, [HLI]
-                        LD B, [HL]
-                        LD C, A
-                        LD HL, BallX
-                        LD A, [HLI]
-                        LD H, [HL]
-                        LD L, A
-                        ADD HL, BC
-                        RET
+ApplyVelocityX:     LD HL, BallVelocityX
+                    LD A, [HLI]
+                    LD B, [HL]
+                    LD C, A
+                    LD HL, BallX
+                    LD A, [HLI]
+                    LD H, [HL]
+                    LD L, A
+                    ADD HL, BC
+                    LD A, L
+                    LD [BallX], A
+                    LD A, H
+                    LD [BallX+1], A
+                    RET
 
-UpdateBallX:    CALL ApplyBallVelocityX
-                ; check for left side collision
-                LD A, H
-                CP 8
-                JR NC, .nc
-                ; we collided, so negate velocity
-                LD HL, BallVelocityX
-                CALL NegateHL
-                ; new X position is left side of the screen
-                LD H, 8
-                LD L, 0
-                JR .writeback
-                ; check for right side collision
-.nc             LD A, H
-                CP 160
-                JR C, .writeback
-                ; we collided, so negate velocity
-                LD HL, BallVelocityX
-                CALL NegateHL
-                ; new X position is just right of the screen
-                LD H, 159
-                LD L, $FF
-.writeback      ; write back X position
-                LD B, H
-                LD A, L
-                LD HL, BallX
-                LD [HLI], A
-                LD [HL], B
+ApplyVelocityY:     LD HL, BallVelocityY
+                    LD A, [HLI]
+                    LD B, [HL]
+                    LD C, A
+                    LD HL, BallY
+                    LD A, [HLI]
+                    LD H, [HL]
+                    LD L, A
+                    ADD HL, BC
+                    LD A, L
+                    LD [BallY], A
+                    LD A, H
+                    LD [BallY+1], A
+                    RET
+
+CheckLeftCollide:   LD A, [BallX+1]
+                    CP 8
+                    RET NC
+                    ; we collided, so negate velocity and reposition
+                    LD HL, BallVelocityX
+                    CALL NegateHL
+                    ; new X position is left side of the screen
+                    LD HL, BallX
+                    XOR A
+                    LD [HLI], A
+                    LD A, 8
+                    LD [HL], A
+                    RET
+
+CheckRightCollide:  LD A, [BallX+1]
+                    CP 160
+                    RET C
+                    ; we collided, so negate velocity and reposition
+                    LD HL, BallVelocityX
+                    CALL NegateHL
+                    ; new X position is just left of the right of the screen
+                    LD HL, BallX
+                    LD A, $FF
+                    LD [HLI], A
+                    LD A, 159
+                    LD [HL], A
+                    RET
+
+UpdateBallX:    CALL ApplyVelocityX
+                CALL CheckLeftCollide
+                CALL CheckRightCollide
                 RET
 
-; returns new position in HL
-ApplyBallVelocityY:     LD HL, BallVelocityY
-                        LD A, [HLI]
-                        LD B, [HL]
-                        LD C, A
-                        LD HL, BallY
-                        LD A, [HLI]
-                        LD H, [HL]
-                        LD L, A
-                        ADD HL, BC
-                        RET
+CheckPaddleCollide: LD A, [BallY+1]
+                    ; check if we're below the top of the paddle
+                    ADD BALL_HEIGHT/2
+                    CP PADDLE_Y
+                    RET C
+                    ; check if we're above the bottom of the paddle
+                    CP PADDLE_Y + PADDLE_HEIGHT
+                    RET NC
+                    ; check if we're to the left of the paddle
+                    LD A, [BallX+1]
+                    ADD BALL_WIDTH/2
+                    LD B, A
+                    LD A, [PaddleX+1]
+                    CP B
+                    RET NC
+                    ; check if we're to the right of the paddle
+                    ADD PADDLE_WIDTH
+                    CP B
+                    RET C
+                    ; we collided, so negate velocity and reposition
+                    LD HL, BallVelocityY
+                    CALL NegateHL
+                    ; new Y position is just above the paddle
+                    LD HL, BallY
+                    LD A, $FF
+                    LD [HLI], A
+                    LD A, PADDLE_Y - BALL_HEIGHT - 1
+                    LD [HL], A
+                    RET
 
-UpdateBallY:    CALL ApplyBallVelocityY
-                ; check for top side collision
-                LD A, H
-                CP 16
-                JR NC, .checkBottom
-                ; we collided, so negate velocity
-                LD HL, BallVelocityY
-                CALL NegateHL
-                ; new Y position is left side of the screen
-                LD H, 16
-                LD L, 0
-                JR .writeback
-                ; check for bottom side collision
-.checkBottom    LD A, H
-                CP 152
-                JR C, .checkPaddle
-                ; we collided, so end game
-                LD A, BALL_ON_PADDLE
-                LD [BallState], A
-                RET
-.checkPaddle    ADD BALL_HEIGHT/2
-                CP PADDLE_Y
-                JR C, .writeback
-                CP PADDLE_Y + PADDLE_HEIGHT
-                JR NC, .writeback
-                LD A, [BallX+1]
-                ADD BALL_WIDTH/2
-                LD B, A
-                LD A, [PaddleX+1]
-                CP B
-                JR NC, .writeback
-                ADD PADDLE_WIDTH
-                CP B
-                JR C, .writeback
-                ; we collided, so negate velocity
-                LD HL, BallVelocityY
-                CALL NegateHL
-                ; new Y position is just above the paddle
-                LD H, PADDLE_Y - BALL_HEIGHT - 1
-                LD L, $FF
-.writeback      ; write back Y position
-                LD B, H
-                LD A, L
-                LD HL, BallY
-                LD [HLI], A
-                LD [HL], B
+CheckTopCollide:    LD A, [BallY+1]
+                    CP 16
+                    RET NC
+                    ; we collided, so negate velocity and reposition
+                    LD HL, BallVelocityY
+                    CALL NegateHL
+                    ; new Y position is just below top of the screen
+                    LD HL, BallY
+                    XOR A
+                    LD [HLI], A
+                    LD A, 16
+                    LD [HL], A
+                    RET
+
+CheckBottomCollide: LD A, [BallY+1]
+                    CP 152
+                    RET C
+                    ; we collided, so end game
+                    LD A, BALL_ON_PADDLE
+                    LD [BallState], A
+                    RET
+
+UpdateBallY:    CALL ApplyVelocityY
+                CALL CheckPaddleCollide
+                CALL CheckTopCollide
+                CALL CheckBottomCollide
                 RET
 
 UpdateBall::    LD A, [BallState]
@@ -161,33 +180,33 @@ UpdateBall::    LD A, [BallState]
                 JP Z, UpdateBallOnPaddle
                 JP UpdateBallMoving
 
-UpdateBallMoving:       CALL UpdateBallX
-                        CALL UpdateBallY
-                        RET
+UpdateBallMoving:   CALL UpdateBallX
+                    CALL UpdateBallY
+                    RET
 
-LaunchBall:     LD A, BALL_MOVING
-                LD [BallState], A
-                RET
+LaunchBall: LD A, BALL_MOVING
+            LD [BallState], A
+            RET
 
-PutBallOntoPaddle:      LD HL, BallX
-                        XOR A
-                        LD [HLI], A
-                        LD A, [PaddleX+1]
-                        ADD PADDLE_WIDTH/2 - BALL_WIDTH/2
-                        LD [HL], A
-                        LD HL, BallY
-                        XOR A
-                        LD [HLI], A
-                        LD A, PADDLE_Y
-                        SUB BALL_HEIGHT
-                        LD [HL], A
-                        RET
+PutBallOntoPaddle:  LD HL, BallX
+                    XOR A
+                    LD [HLI], A
+                    LD A, [PaddleX+1]
+                    ADD PADDLE_WIDTH/2 - BALL_WIDTH/2
+                    LD [HL], A
+                    LD HL, BallY
+                    XOR A
+                    LD [HLI], A
+                    LD A, PADDLE_Y
+                    SUB BALL_HEIGHT
+                    LD [HL], A
+                    RET
 
-UpdateBallOnPaddle:     CALL PutBallOntoPaddle
-                        LD A, [KeysDown]
-                        BIT INPUT_A, A
-                        JP Z, LaunchBall
-                        RET
+UpdateBallOnPaddle: CALL PutBallOntoPaddle
+                    LD A, [KeysDown]
+                    BIT INPUT_A, A
+                    JP Z, LaunchBall
+                    RET
                 
 SetupBallOAM::  LD HL, ShadowOAM
                 LD A, [BallY+1]
