@@ -28,6 +28,7 @@ Main:   DI
         CALL LoadSpriteGfx
         CALL InitBall
         Call InitPaddle
+        CALL InitInput
         CALL TurnOnScreen
 .loop   CALL UpdateInput
         CALL UpdateBall
