@@ -138,10 +138,43 @@ CheckBottomCollide: LD A, [BallY+1]
                     LD [BallState], A
                     RET
 
+CheckStageCollideY: LD H, HIGH(StageMap)
+                    ; get row
+                    LD A, [BallY+1]
+                    ADD 4 - 16 - 16     ; account for ball center - OAM Y-offset - map start row
+                    SRL A
+                    SRL A
+                    SRL A
+                    ; check to make sure we're in bounds
+                    CP 8
+                    RET NC
+                    ; convert from row to row address
+                    SWAP A
+                    LD L, A
+                    ; get column
+                    LD A, [BallX+1]
+                    ADD 4 - 8 - 16      ; account for ball center - OAM X-offset - map start (left)
+                    SRL A
+                    SRL A
+                    SRL A
+                    ; check to make sure we're in bounds
+                    CP 16
+                    RET NC
+                    ; add to row address to get tile pointer 
+                    ADD L
+                    LD L, A
+                    ; get tile
+                    LD A, [HL]
+                    AND A
+                    RET Z
+                    Reflect BallVelocityY
+                    RET
+
 UpdateBallY:    ApplyVelocity BallVelocityY, BallY
                 CALL CheckPaddleCollide
                 CALL CheckTopCollide
                 CALL CheckBottomCollide
+                CALL CheckStageCollideY
                 RET
 
 UpdateBall::    LD A, [BallState]
