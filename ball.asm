@@ -172,9 +172,9 @@ PutBallOntoPaddle:  LD HL, BallX
                     RET
 
 UpdateBallOnPaddle: CALL PutBallOntoPaddle
-                    LD A, [KeysUp]
+                    LD A, [KeysPressed]
                     BIT INPUT_A, A
-                    JP Z, LaunchBall
+                    JP NZ, LaunchBall
                     RET
                 
 SetupBallOAM::  LD HL, ShadowOAM
