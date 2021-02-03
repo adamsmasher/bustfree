@@ -1,5 +1,5 @@
 SECTION "InputRAM", WRAM0
-KeysDown::  DS 1            ; directions in low nibble, buttons in high nibble
+KeysUp::        DS 1            ; directions in low nibble, buttons in high nibble
 
 SECTION "Input", ROM0
 
@@ -29,5 +29,5 @@ UpdateInput::   LD C, $00
                 AND $0F
                 SWAP A
                 OR B
-                LD [KeysDown], A
+                LD [KeysUp], A
                 RET

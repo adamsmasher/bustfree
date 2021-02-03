@@ -172,7 +172,7 @@ PutBallOntoPaddle:  LD HL, BallX
                     RET
 
 UpdateBallOnPaddle: CALL PutBallOntoPaddle
-                    LD A, [KeysDown]
+                    LD A, [KeysUp]
                     BIT INPUT_A, A
                     JP Z, LaunchBall
                     RET

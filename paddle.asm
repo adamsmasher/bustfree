@@ -21,7 +21,7 @@ InitPaddle::    ; init paddle x
                 LD [HL], A
                 RET
 
-HandleInput:    LD A, [KeysDown]
+HandleInput:    LD A, [KeysUp]
                 BIT INPUT_LEFT, A
                 JP Z, MoveLeft
                 BIT INPUT_RIGHT, A
