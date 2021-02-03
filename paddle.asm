@@ -21,12 +21,25 @@ InitPaddle::    ; init paddle x
                 LD [HL], A
                 RET
 
-HandleInput:    LD A, [KeysUp]
+HandleMovement: LD A, [KeysUp]
                 BIT INPUT_LEFT, A
                 JP Z, MoveLeft
                 BIT INPUT_RIGHT, A
                 JP Z, MoveRight
                 JP StopPaddle
+
+HandleRunning:  LD A, [KeysUp]
+                BIT INPUT_B, A
+                RET NZ
+                LD HL, PaddleVelocityX
+                SLA [HL]
+                INC HL
+                RL [HL]
+                RET
+
+HandleInput:    CALL HandleMovement
+                CALL HandleRunning
+                RET
 
 CheckLeftCollide:   LD A, [PaddleX+1]
                     CP 8
