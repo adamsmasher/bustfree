@@ -172,9 +172,8 @@ CheckBallInBounds:  LD A, [BallRow]
                     CP 16
                     RET
 
-CheckStageCollideX: CALL CheckBallInBounds
-                    RET NC
-                    LD H, HIGH(StageMap)
+; NZ if a collision occurred
+CheckStageCollide:  LD H, HIGH(StageMap)
                     LD A, [BallRow]
                     ; convert from row to row address
                     SWAP A
@@ -187,7 +186,13 @@ CheckStageCollideX: CALL CheckBallInBounds
                     LD A, [HL]
                     ; check if the tile is solid
                     AND A
+                    RET
+
+CheckStageCollideX: CALL CheckBallInBounds
+                    RET NC
+                    CALL CheckStageCollide
                     RET Z
+                    ; TODO: stop relying on HL
                     ; we hit a brick, so clear it
                     XOR A
                     LD [HL], A
@@ -217,20 +222,9 @@ CheckStageCollideX: CALL CheckBallInBounds
 
 CheckStageCollideY: CALL CheckBallInBounds
                     RET NC
-                    LD H, HIGH(StageMap)
-                    LD A, [BallRow]
-                    ; convert from row to row address
-                    SWAP A
-                    LD L, A
-                    LD A, [BallCol]
-                    ; add to row address to get tile pointer 
-                    ADD L
-                    LD L, A
-                    ; get tile
-                    LD A, [HL]
-                    ; check if the tile is solid
-                    AND A
+                    CALL CheckStageCollide
                     RET Z
+                    ; TODO: stop relying on HL
                     ; we hit a brick, so clear it
                     XOR A
                     LD [HL], A
