@@ -162,18 +162,24 @@ UpdateBallCol:      LD A, [BallX+1]
                     LD [BallCol], A
                     RET
 
-CheckStageCollideX: LD H, HIGH(StageMap)
-                    LD A, [BallRow]
+; sets C if in bounds, NC otherwise
+CheckBallInBounds:  LD A, [BallRow]
                     ; check to make sure row is in bounds
                     CP 8
                     RET NC
+                    LD A, [BallCol]
+                    ; check to make sure col is in bounds
+                    CP 16
+                    RET
+
+CheckStageCollideX: CALL CheckBallInBounds
+                    RET NC
+                    LD H, HIGH(StageMap)
+                    LD A, [BallRow]
                     ; convert from row to row address
                     SWAP A
                     LD L, A
                     LD A, [BallCol]
-                    ; check to make sure col is in bounds
-                    CP 16
-                    RET NC
                     ; add to row address to get tile pointer 
                     ADD L
                     LD L, A
@@ -209,18 +215,14 @@ CheckStageCollideX: LD H, HIGH(StageMap)
                     Reflect BallVelocityX
                     RET
 
-CheckStageCollideY: LD H, HIGH(StageMap)
-                    LD A, [BallRow]
-                    ; check to make sure row is in bounds
-                    CP 8
+CheckStageCollideY: CALL CheckBallInBounds
                     RET NC
+                    LD H, HIGH(StageMap)
+                    LD A, [BallRow]
                     ; convert from row to row address
                     SWAP A
                     LD L, A
                     LD A, [BallCol]
-                    ; check to make sure col is in bounds
-                    CP 16
-                    RET NC
                     ; add to row address to get tile pointer 
                     ADD L
                     LD L, A
