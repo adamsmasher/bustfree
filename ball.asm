@@ -14,6 +14,8 @@ BallY:          DS 2
 BallVelocityX:  DS 2
 BallVelocityY:  DS 2
 BallState:      DS 1
+BallRow:        DS 1
+BallCol:        DS 1
 
 SECTION "Ball", ROM0
 
@@ -29,6 +31,10 @@ InitBall::  ; init ball x
             LD [HLI], A
             LD A, 128
             LD [HL], A
+            ; TODO: maybe use the correct values here?
+            LD A, $FF
+            LD [BallRow], A
+            LD [BallCol], A
             ; setup velocity X (1.5px)
             LD HL, BallVelocityX
             LD A, $80
@@ -84,6 +90,7 @@ CheckRightCollide:  LD A, [BallX+1]
                     RET
 
 UpdateBallX:    ApplyVelocity BallVelocityX, BallX
+                CALL UpdateBallCol
                 CALL CheckLeftCollide
                 CALL CheckRightCollide
                 CALL CheckStageCollideX
@@ -139,26 +146,32 @@ CheckBottomCollide: LD A, [BallY+1]
                     LD [BallState], A
                     RET
 
-CheckStageCollideX: LD H, HIGH(StageMap)
-                    ; get row
-                    LD A, [BallY+1]
+UpdateBallRow:      LD A, [BallY+1]
                     ADD 4 - 16 - 16     ; account for ball center - OAM Y-offset - map start row
                     SRL A
                     SRL A
                     SRL A
-                    ; check to make sure we're in bounds
+                    LD [BallRow], A
+                    RET
+
+UpdateBallCol:      LD A, [BallX+1]
+                    ADD 4 - 8 - 16      ; account for ball center - OAM X-offset - map start (left)
+                    SRL A
+                    SRL A
+                    SRL A
+                    LD [BallCol], A
+                    RET
+
+CheckStageCollideX: LD H, HIGH(StageMap)
+                    LD A, [BallRow]
+                    ; check to make sure row is in bounds
                     CP 8
                     RET NC
                     ; convert from row to row address
                     SWAP A
                     LD L, A
-                    ; get column
-                    LD A, [BallX+1]
-                    ADD 4 - 8 - 16      ; account for ball center - OAM X-offset - map start (left)
-                    SRL A
-                    SRL A
-                    SRL A
-                    ; check to make sure we're in bounds
+                    LD A, [BallCol]
+                    ; check to make sure col is in bounds
                     CP 16
                     RET NC
                     ; add to row address to get tile pointer 
@@ -197,25 +210,15 @@ CheckStageCollideX: LD H, HIGH(StageMap)
                     RET
 
 CheckStageCollideY: LD H, HIGH(StageMap)
-                    ; get row
-                    LD A, [BallY+1]
-                    ADD 4 - 16 - 16     ; account for ball center - OAM Y-offset - map start row
-                    SRL A
-                    SRL A
-                    SRL A
-                    ; check to make sure we're in bounds
+                    LD A, [BallRow]
+                    ; check to make sure row is in bounds
                     CP 8
                     RET NC
                     ; convert from row to row address
                     SWAP A
                     LD L, A
-                    ; get column
-                    LD A, [BallX+1]
-                    ADD 4 - 8 - 16      ; account for ball center - OAM X-offset - map start (left)
-                    SRL A
-                    SRL A
-                    SRL A
-                    ; check to make sure we're in bounds
+                    LD A, [BallCol]
+                    ; check to make sure col is in bounds
                     CP 16
                     RET NC
                     ; add to row address to get tile pointer 
@@ -254,6 +257,7 @@ CheckStageCollideY: LD H, HIGH(StageMap)
                     RET
 
 UpdateBallY:    ApplyVelocity BallVelocityY, BallY
+                CALL UpdateBallRow
                 CALL CheckPaddleCollide
                 CALL CheckTopCollide
                 CALL CheckBottomCollide
