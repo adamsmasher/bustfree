@@ -165,8 +165,33 @@ CheckStageCollideY: LD H, HIGH(StageMap)
                     LD L, A
                     ; get tile
                     LD A, [HL]
+                    ; check if the tile is solid
                     AND A
                     RET Z
+                    ; we hit a brick, so clear it
+                    XOR A
+                    LD [HL], A
+                    LD D, $98
+                    LD A, L
+                    AND $F0
+                    ADD $20
+                    SLA A
+                    LD E, A
+                    JR NC, .nc
+                    INC D
+.nc                 LD A, L
+                    AND $0F
+                    ADD 2
+                    ADD E
+                    LD E, A
+                    LD HL, VRAMUpdateAddr
+                    LD A, E
+                    LD [HLI], A
+                    LD [HL], D
+                    XOR A
+                    LD [VRAMUpdateData], A
+                    LD A, 1
+                    LD [VRAMUpdateNeeded], A
                     Reflect BallVelocityY
                     RET
 
