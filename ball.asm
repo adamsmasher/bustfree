@@ -173,6 +173,7 @@ CheckBallInBounds:  LD A, [BallRow]
                     RET
 
 ; NZ if a collision occurred
+; HL will contain ptr to stage map data
 CheckStageCollide:  LD H, HIGH(StageMap)
                     LD A, [BallRow]
                     ; convert from row to row address
@@ -188,13 +189,8 @@ CheckStageCollide:  LD H, HIGH(StageMap)
                     AND A
                     RET
 
-CheckStageCollideX: CALL CheckBallInBounds
-                    RET NC
-                    CALL CheckStageCollide
-                    RET Z
-                    ; TODO: stop relying on HL
-                    ; we hit a brick, so clear it
-                    XOR A
+; HL - ptr to collided brick in stage data
+ClearCollidedBrick: XOR A
                     LD [HL], A
                     LD D, $98
                     LD A, L
@@ -217,6 +213,13 @@ CheckStageCollideX: CALL CheckBallInBounds
                     LD [VRAMUpdateData], A
                     LD A, 1
                     LD [VRAMUpdateNeeded], A
+                    RET
+
+CheckStageCollideX: CALL CheckBallInBounds
+                    RET NC
+                    CALL CheckStageCollide
+                    RET Z
+                    CALL ClearCollidedBrick
                     Reflect BallVelocityX
                     RET
 
@@ -224,31 +227,7 @@ CheckStageCollideY: CALL CheckBallInBounds
                     RET NC
                     CALL CheckStageCollide
                     RET Z
-                    ; TODO: stop relying on HL
-                    ; we hit a brick, so clear it
-                    XOR A
-                    LD [HL], A
-                    LD D, $98
-                    LD A, L
-                    AND $F0
-                    ADD $20
-                    SLA A
-                    LD E, A
-                    JR NC, .nc
-                    INC D
-.nc                 LD A, L
-                    AND $0F
-                    ADD 2
-                    ADD E
-                    LD E, A
-                    LD HL, VRAMUpdateAddr
-                    LD A, E
-                    LD [HLI], A
-                    LD [HL], D
-                    XOR A
-                    LD [VRAMUpdateData], A
-                    LD A, 1
-                    LD [VRAMUpdateNeeded], A
+                    CALL ClearCollidedBrick
                     Reflect BallVelocityY
                     RET
 
