@@ -86,6 +86,7 @@ CheckRightCollide:  LD A, [BallX+1]
 UpdateBallX:    ApplyVelocity BallVelocityX, BallX
                 CALL CheckLeftCollide
                 CALL CheckRightCollide
+                CALL CheckStageCollideX
                 RET
 
 CheckPaddleCollide: LD A, [BallY+1]
@@ -136,6 +137,63 @@ CheckBottomCollide: LD A, [BallY+1]
                     ; we collided, so end game
                     LD A, BALL_ON_PADDLE
                     LD [BallState], A
+                    RET
+
+CheckStageCollideX: LD H, HIGH(StageMap)
+                    ; get row
+                    LD A, [BallY+1]
+                    ADD 4 - 16 - 16     ; account for ball center - OAM Y-offset - map start row
+                    SRL A
+                    SRL A
+                    SRL A
+                    ; check to make sure we're in bounds
+                    CP 8
+                    RET NC
+                    ; convert from row to row address
+                    SWAP A
+                    LD L, A
+                    ; get column
+                    LD A, [BallX+1]
+                    ADD 4 - 8 - 16      ; account for ball center - OAM X-offset - map start (left)
+                    SRL A
+                    SRL A
+                    SRL A
+                    ; check to make sure we're in bounds
+                    CP 16
+                    RET NC
+                    ; add to row address to get tile pointer 
+                    ADD L
+                    LD L, A
+                    ; get tile
+                    LD A, [HL]
+                    ; check if the tile is solid
+                    AND A
+                    RET Z
+                    ; we hit a brick, so clear it
+                    XOR A
+                    LD [HL], A
+                    LD D, $98
+                    LD A, L
+                    AND $F0
+                    ADD $20
+                    SLA A
+                    LD E, A
+                    JR NC, .nc
+                    INC D
+.nc                 LD A, L
+                    AND $0F
+                    ADD 2
+                    ADD E
+                    LD E, A
+                    LD HL, VRAMUpdateAddr
+                    LD A, E
+                    LD [HLI], A
+                    LD [HL], D
+                    XOR A
+                    LD [VRAMUpdateData], A
+                    LD A, 1
+                    LD [VRAMUpdateNeeded], A
+                    Reflect BallVelocityX
                     RET
 
 CheckStageCollideY: LD H, HIGH(StageMap)
