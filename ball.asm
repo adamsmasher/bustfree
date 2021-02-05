@@ -204,14 +204,20 @@ ClearCollidedBrick: XOR A
                     ADD 2
                     ADD E
                     LD E, A
-                    LD HL, VRAMUpdateAddr
+                    LD A, [VRAMUpdateLen]
+                    SLA A
+                    SLA A
+                    ADD LOW(VRAMUpdates)
+                    LD L, A
+                    LD H, HIGH(VRAMUpdates)
                     LD A, E
                     LD [HLI], A
-                    LD [HL], D
+                    LD A, D
+                    LD [HLI], A
                     XOR A
-                    LD [VRAMUpdateData], A
-                    LD A, 1
-                    LD [VRAMUpdateNeeded], A
+                    LD [HLI], A
+                    LD HL, VRAMUpdateLen
+                    INC [HL]
                     RET
 
 CheckStageCollideX: CALL CheckBallInBounds
