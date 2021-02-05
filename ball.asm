@@ -142,7 +142,11 @@ CheckBottomCollide: LD A, [BallY+1]
                     CP 160
                     RET C
                     ; we collided, so end game
-                    LD A, BALL_ON_PADDLE
+                    LD HL, NoOfLives
+                    DEC [HL]
+                    JR NZ, .nz
+                    CALL GameOver
+.nz                 LD A, BALL_ON_PADDLE
                     LD [BallState], A
                     RET
 

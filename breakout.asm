@@ -1,3 +1,6 @@
+SECTION "GameVars", WRAM0
+NoOfLives::     DS 1
+
 SECTION "Boot", ROM0[$0100]
 Boot:   JP Main
 
@@ -13,10 +16,8 @@ Main:   DI
         CALL InitPalette
         CALL LoadBGGfx
         CALL LoadSpriteGfx
-        CALL InitBall
-        CALL InitPaddle
-        CALL InitStage
         CALL InitInput
+        CALL InitGame
         CALL DrawStage
         CALL TurnOnScreen
 .loop   CALL UpdateInput
@@ -26,6 +27,19 @@ Main:   DI
         CALL SetupPaddleOAM
         HALT
         JR .loop
+
+InitGame:       LD A, 3
+                LD [NoOfLives], A
+                CALL InitBall
+                CALL InitPaddle
+                CALL InitStage
+                RET
+
+GameOver::      CALL InitGame
+                CALL TurnOffScreen
+                CALL DrawStage
+                CALL TurnOnScreen
+                RET
 
 InitInterrupts: LD A, 1         ; enable vblank
                 LDH [$FF], A
