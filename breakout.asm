@@ -70,6 +70,11 @@ TurnOnScreen:   ; enable display
                 ; map at $9800
                 ; sprites enabled
                 ; bg enabled
-                LD A, %10000011
+                ; window enabled
+                LD A, %11100011
                 LDH [$40], A
+                LD A, 136
+                LDH [$4A], A
+                LD A, 7
+                LDH [$4B], A
                 RET
