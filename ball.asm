@@ -193,15 +193,14 @@ CheckStageCollide:  LD H, HIGH(StageMap)
 ClearCollidedBrick: XOR A
                     LD [HL], A
                     LD D, $98
-                    LD A, L
-                    AND $F0
-                    ADD $20
+                    LD A, [BallRow]
+                    ADD 2
+                    SWAP A
                     SLA A
                     LD E, A
                     JR NC, .nc
                     INC D
-.nc                 LD A, L
-                    AND $0F
+.nc                 LD A, [BallCol]
                     ADD 2
                     ADD E
                     LD E, A
