@@ -1,5 +1,4 @@
 SECTION "SpriteData", ROM0
-SpriteData:
 BallTileData:
 DW `00011000
 DW `00122100
@@ -28,14 +27,22 @@ DW `00000000
 DW `00000000
 DW `00000000
 DW `00000000
-SpriteDataEnd:
+PaddleTileDataEnd:
 
-LoadSpriteGfx:: LD HL, SpriteData
+LoadSpriteGfx:: LD HL, PaddleTileData
                 LD DE, $8000
-                LD B, SpriteDataEnd - SpriteData
-.loop           LD A, [HLI]
+                LD B, PaddleTileDataEnd - PaddleTileData
+.loop1          LD A, [HLI]
                 LD [DE], A
                 INC E
                 DEC B
-                JR NZ, .loop
+                JR NZ, .loop1
+                LD HL, BallTileData
+                LD DE, $8FF0
+                LD B, 16
+.loop2          LD A, [HLI]
+                LD [DE], A
+                INC E
+                DEC B
+                JR NZ, .loop2
                 RET

@@ -8,6 +8,8 @@ BALL_HEIGHT     EQU 8
 BALL_ON_PADDLE  EQU 0
 BALL_MOVING     EQU 1
 
+BALL_TILE       EQU $FF
+
 SECTION "BallRAM", WRAM0
 BallX:          DS 2
 BallY:          DS 2
@@ -285,5 +287,7 @@ SetupBallOAM::  LD HL, ShadowOAM
                 LD A, [BallY+1]
                 LD [HLI], A
                 LD A, [BallX+1]
+                LD [HLI], A
+                LD A, BALL_TILE
                 LD [HL], A
                 RET
