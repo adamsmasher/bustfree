@@ -1,3 +1,7 @@
+INCLUDE "ball.inc"
+
+STARTING_LIVES  EQU 3
+
 SECTION "GameVars", WRAM0
 NoOfLives::     DS 1
 
@@ -19,6 +23,7 @@ Main:   DI
         CALL InitInput
         CALL InitGame
         CALL DrawStage
+        CALL DrawWindow
         CALL TurnOnScreen
 .loop   CALL UpdateInput
         CALL UpdateBall
@@ -28,7 +33,7 @@ Main:   DI
         HALT
         JR .loop
 
-InitGame:       LD A, 3
+InitGame:       LD A, STARTING_LIVES
                 LD [NoOfLives], A
                 CALL InitBall
                 CALL InitPaddle
@@ -38,6 +43,7 @@ InitGame:       LD A, 3
 GameOver::      CALL InitGame
                 CALL TurnOffScreen
                 CALL DrawStage
+                CALL DrawWindow
                 CALL TurnOnScreen
                 RET
 
@@ -68,6 +74,7 @@ InitPalette:    LD A, %11100100
 TurnOnScreen:   ; enable display
                 ; BG tiles at $8800
                 ; map at $9800
+                ; window map at $9C00
                 ; sprites enabled
                 ; bg enabled
                 ; window enabled
@@ -77,4 +84,12 @@ TurnOnScreen:   ; enable display
                 LDH [$4A], A
                 LD A, 7
                 LDH [$4B], A
+                RET
+
+DrawWindow:     LD A, BALL_TILE
+                LD HL, $9C00
+                LD B, STARTING_LIVES
+.loop           LD [HLI], A
+                DEC B
+                JR NZ, .loop
                 RET

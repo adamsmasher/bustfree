@@ -1,14 +1,7 @@
+INCLUDE "ball.inc"
 INCLUDE "entity.inc"
 INCLUDE "input.inc"
 INCLUDE "paddle.inc"
-
-BALL_WIDTH      EQU 8
-BALL_HEIGHT     EQU 8
-
-BALL_ON_PADDLE  EQU 0
-BALL_MOVING     EQU 1
-
-BALL_TILE       EQU $FF
 
 SECTION "BallRAM", WRAM0
 BallX:          DS 2
@@ -146,10 +139,18 @@ CheckBottomCollide: LD A, [BallY+1]
                     ; we collided, so end game
                     LD HL, NoOfLives
                     DEC [HL]
-                    JR NZ, .nz
-                    CALL GameOver
-.nz                 LD A, BALL_ON_PADDLE
+                    JP Z, GameOver
+                    LD A, BALL_ON_PADDLE
                     LD [BallState], A
+                    LD HL, VRAMUpdates
+                    LD A, [NoOfLives]
+                    LD [HLI], A
+                    LD A, $9C
+                    LD [HLI], A
+                    XOR A
+                    LD [HLI], A
+                    LD A, 1
+                    LD [VRAMUpdateLen], A
                     RET
 
 UpdateBallRow:      LD A, [BallY+1]
