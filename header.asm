@@ -3,7 +3,7 @@ DS 48, $00
 
 SECTION "Title", ROM0[$0134]
 ;   01234567
-DB "BREAKOUT"
+DB "BUSTFREE"
 DS 8, $00
 
 SECTION "NewLicenseeCode", ROM0[$0144]
