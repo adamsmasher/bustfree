@@ -1,9 +1,9 @@
 INCLUDE "ball.inc"
-
-STARTING_LIVES  EQU 3
+INCLUDE "game.inc"
 
 SECTION "GameVars", WRAM0
 NoOfLives::     DS 1
+BricksBroken::  DS 1
 
 SECTION "Boot", ROM0[$0100]
 Boot:   JP Main
@@ -35,6 +35,8 @@ Main:   DI
 
 InitGame:       LD A, STARTING_LIVES
                 LD [NoOfLives], A
+                XOR A
+                LD [BricksBroken], A
                 CALL InitBall
                 CALL InitPaddle
                 CALL InitStage
