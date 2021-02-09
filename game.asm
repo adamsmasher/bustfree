@@ -30,6 +30,7 @@ TurnOnScreen:   ; enable display
                 ; window enabled
                 LD A, %11100011
                 LDH [$40], A
+                ; set window position
                 LD A, 136
                 LDH [$4A], A
                 LD A, 7
