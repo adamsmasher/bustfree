@@ -12,6 +12,7 @@ Main:   DI
         CALL ClearVRAM
         CALL InitPalette
         CALL InitInput
+        CALL TitleScreen
         JP StartGame
 
 InitInterrupts: LD A, 1         ; enable vblank
