@@ -53,11 +53,9 @@ InitGame:   LD A, STARTING_LIVES
             CALL InitStage
             RET
 
-GameOver::  CALL InitGame
-            CALL TurnOffScreen
-            CALL DrawStage
-            CALL DrawStatus
-            CALL TurnOnScreen
+GameOver::  CALL TurnOffScreen
+            CALL ClearVRAM
+            CALL StartTitleScreen
             RET
 
 DrawStatus: LD A, BALL_TILE
