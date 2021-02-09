@@ -1,6 +1,8 @@
 # Bustfree!
 ### A brick-busting arcade game for the Nintendo Game Boy
 
+![bustfree](https://user-images.githubusercontent.com/246294/107318374-7bfcea80-6a51-11eb-8b60-386143707b49.png)
+
 *Bustfree!* is a simple brick-busting game in the style of Atari's [Breakout](https://en.wikipedia.org/wiki/Breakout_(video_game)) or Taito's [Arkanoid](https://en.wikipedia.org/wiki/Arkanoid),
 developed for the Nintendo Game Boy using freely available, unofficial tools.
 
