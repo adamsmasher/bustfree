@@ -1,6 +1,5 @@
 INCLUDE "ball.inc"
 INCLUDE "entity.inc"
-INCLUDE "game.inc"
 INCLUDE "input.inc"
 INCLUDE "paddle.inc"
 
@@ -200,10 +199,12 @@ CheckStageCollide:  LD H, HIGH(StageMap)
 ; HL - ptr to collided brick in stage data
 ClearCollidedBrick: XOR A
                     LD [HL], A
+                    LD A, [TotalBricks]
+                    LD B, A
                     LD HL, BricksBroken
                     LD A, [HL]
                     INC A
-                    CP NO_OF_BRICKS
+                    CP B
                     JP Z, GameOver
                     LD [HL], A
                     LD D, $98

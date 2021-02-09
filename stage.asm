@@ -1,5 +1,6 @@
 SECTION "StageRAM", WRAM0, ALIGN[8]
 StageMap::      DS 16 * 8
+TotalBricks::   DS 1
 
 SECTION "Stage", ROM0
 DrawStage:: LD HL, StageMap
@@ -38,12 +39,29 @@ DB "..####..####..#."
 DB "..####..####..#."
 POPC
 
-InitStage:: LD HL, StageData
-            LD DE, StageMap
-            LD B, 128
-.loop       LD A, [HLI]
-            LD [DE], A
-            INC E
-            DEC B
-            JR NZ, .loop
+InitStageMap:   LD HL, StageData
+                LD DE, StageMap
+                LD B, 128
+.loop           LD A, [HLI]
+                LD [DE], A
+                INC E
+                DEC B
+                JR NZ, .loop
+                RET
+
+InitTotalBricks:    LD HL, StageMap
+                    LD B, 128
+                    LD C, 0
+.loop               LD A, [HLI]
+                    AND A
+                    JR Z, .z
+                    INC C
+.z                  DEC B
+                    JR NZ, .loop
+                    LD A, C
+                    LD [TotalBricks], A
+                    RET
+
+InitStage:: CALL InitStageMap
+            CALL InitTotalBricks
             RET
