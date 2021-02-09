@@ -71,15 +71,24 @@ LoadGfx:    LD DE, $8800
 
 SECTION "TitleScreen", ROM0
 
-TitleScreen::   CALL LoadGfx
-                CALL DrawTitleScreen
-                CALL TurnOnScreen
-.loop           HALT
+StartTitleScreen::  CALL LoadGfx
+                    CALL DrawTitleScreen
+                    CALL TurnOnScreen
+                    LD HL, GameLoopPtr
+                    LD A, LOW(TitleScreen)
+                    LD [HLI], A
+                    LD A, HIGH(TitleScreen)
+                    LD [HL], A
+                    RET
+
+TitleScreen:    HALT
                 CALL UpdateInput
                 LD A, [KeysPressed]
                 BIT INPUT_START, A
-                JR Z, .loop
+                RET Z
                 CALL TurnOffScreen
+                CALL ClearVRAM
+                CALL StartGame
                 RET
 
 TurnOnScreen:   ; enable display

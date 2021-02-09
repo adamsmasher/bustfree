@@ -13,13 +13,20 @@ StartGame:: CALL LoadBGGfx
             CALL DrawStage
             CALL DrawStatus
             CALL TurnOnScreen
-.loop       CALL UpdateInput
-            CALL UpdateBall
-            CALL UpdatePaddle
-            CALL SetupBallOAM
-            CALL SetupPaddleOAM
-            HALT
-            JR .loop
+            LD HL, GameLoopPtr
+            LD A, LOW(Game)
+            LD [HLI], A
+            LD A, HIGH(Game)
+            LD [HL], A
+            RET
+
+Game:   HALT
+        CALL UpdateInput
+        CALL UpdateBall
+        CALL UpdatePaddle
+        CALL SetupBallOAM
+        CALL SetupPaddleOAM
+        RET
 
 TurnOnScreen:   ; enable display
                 ; BG tiles at $8800

@@ -1,3 +1,6 @@
+SECTION "MainVars", WRAM0
+GameLoopPtr::   DS 2
+
 SECTION "Boot", ROM0[$0100]
 Boot:   JP Main
 
@@ -12,8 +15,15 @@ Main:   DI
         CALL ClearVRAM
         CALL InitPalette
         CALL InitInput
-        CALL TitleScreen
-        JP StartGame
+        CALL StartTitleScreen
+.loop   CALL RunLoop
+        JR .loop
+
+RunLoop:        LD HL, GameLoopPtr
+                LD A, [HLI]
+                LD H, [HL]
+                LD L, A
+                JP HL
 
 InitInterrupts: LD A, 1         ; enable vblank
                 LDH [$FF], A
@@ -24,7 +34,7 @@ TurnOffScreen:: HALT                    ; wait for vblank
                 LDH [$40], A
                 RET
 
-ClearVRAM:      XOR A
+ClearVRAM::     XOR A
                 LD BC, $1800 + $400     ; tiles + map
                 LD HL, $8000
 .loop           LD [HLI], A
