@@ -55,7 +55,10 @@ Reflect:    MACRO
             LD [HLI], A
             LD A, [HL]
             CPL
-            LD [HL], A
+            ; if the above INC wrapped, increment here
+            JR NZ, .nz\@
+            INC A
+.nz\@       LD [HL], A
 ENDM
 
 CheckLeftCollide:   LD A, [BallX+1]
