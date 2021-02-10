@@ -61,11 +61,36 @@ Reflect:    MACRO
 .nz\@       LD [HL], A
 ENDM
 
+SpeedUpM:    MACRO
+        ; adds $10 if positive, otherwise $00
+        LD HL, \1+1
+        LD A, [HLD]
+        BIT 7,A
+        JR NZ, .neg\@
+        LD A, [HL]
+        ADD $20
+        LD [HLI], A
+        JR NC, .done\@
+        INC [HL]
+        JR .done\@
+.neg\@  LD A, [HL]
+        ADD -$20
+        LD [HLI], A
+        JR C, .done\@
+        DEC [HL]
+.done\@
+ENDM
+
+SpeedUp:    SpeedUpM BallVelocityX
+            SpeedUpM BallVelocityY
+            RET
+
 CheckLeftCollide:   LD A, [BallX+1]
                     CP 8
                     RET NC
                     ; we collided, so reflect and reposition
                     Reflect BallVelocityX
+                    CALL SpeedUp
                     ; new X position is left side of the screen
                     LD HL, BallX
                     XOR A
@@ -79,6 +104,7 @@ CheckRightCollide:  LD A, [BallX+1]
                     RET C
                     ; we collided, so reflect and reposition
                     Reflect BallVelocityX
+                    CALL SpeedUp
                     ; new X position is just left of the right of the screen
                     LD HL, BallX
                     LD A, $FF
@@ -115,6 +141,7 @@ CheckPaddleCollide: LD A, [BallY+1]
                     RET C
                     ; we collided, so reflect and reposition
                     Reflect BallVelocityY
+                    CALL SpeedUp
                     ; new Y position is just above the paddle
                     LD HL, BallY
                     LD A, $FF
@@ -128,6 +155,7 @@ CheckTopCollide:    LD A, [BallY+1]
                     RET NC
                     ; we collided, so reflect and reposition
                     Reflect BallVelocityY
+                    CALL SpeedUp
                     ; new Y position is just below top of the screen
                     LD HL, BallY
                     XOR A
@@ -244,6 +272,7 @@ CheckStageCollideX: CALL CheckBallInBounds
                     RET Z
                     CALL ClearCollidedBrick
                     Reflect BallVelocityX
+                    CALL SpeedUp
                     RET
 
 CheckStageCollideY: CALL CheckBallInBounds
@@ -252,6 +281,7 @@ CheckStageCollideY: CALL CheckBallInBounds
                     RET Z
                     CALL ClearCollidedBrick
                     Reflect BallVelocityY
+                    CALL SpeedUp
                     RET
 
 UpdateBallY:    ApplyVelocity BallVelocityY, BallY
