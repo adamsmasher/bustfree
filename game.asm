@@ -55,7 +55,7 @@ InitGame:   LD A, STARTING_LIVES
 
 GameOver::  CALL TurnOffScreen
             CALL ClearVRAM
-            CALL StartTitleScreen
+            CALL StartGameOver
             RET
 
 DrawStatus: LD A, BALL_TILE
