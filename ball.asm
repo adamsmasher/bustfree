@@ -30,17 +30,17 @@ InitBall::  ; init ball x
             LD A, $FF
             LD [BallRow], A
             LD [BallCol], A
-            ; setup velocity X (1.5px)
+            ; setup velocity X (1px)
             LD HL, BallVelocityX
-            LD A, $80
+            XOR A
             LD [HLI], A
-            LD A, 1
+            LD A, $01
             LD [HL], A
-            ; setup velocity Y (-1.5px)
+            ; setup velocity Y (-1px)
             LD HL, BallVelocityY
-            LD A, $80
+            LD A, $00
             LD [HLI], A
-            LD A, $FE
+            LD A, $FF
             LD [HL], A
             ; set ball state
             LD A, BALL_ON_PADDLE
