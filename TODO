@@ -3,6 +3,8 @@
 * continues?
 * score
 * balance the game so that it's actually possible to win
+* better makefile
+* use hblank to stop drawing sprites over status bar
 * some sort of ending
 * sound + music
 * refactor: move ball -> stage collision code out of ball.asm?

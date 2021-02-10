@@ -28,25 +28,9 @@ DrawTitleScreen:    LD HL, BustFreeTxt
                     JR NZ, .draw2
                     RET
 
-SECTION "TitleScreenGfx", ROM0
-TitleScreenGfx: INCBIN "titlescreen.gfx"
-.end
-
-LoadGfx:    LD DE, $8800
-            LD HL, TitleScreenGfx
-            LD BC, TitleScreenGfx.end - TitleScreenGfx
-.loop       LD A, [HLI]
-            LD [DE], A
-            INC DE
-            DEC C
-            JR NZ, .loop
-            DEC B
-            JR NZ, .loop
-            RET
-
 SECTION "TitleScreen", ROM0
 
-StartTitleScreen::  CALL LoadGfx
+StartTitleScreen::  CALL LoadFont
                     CALL DrawTitleScreen
                     CALL TurnOnScreen
                     LD HL, GameLoopPtr
