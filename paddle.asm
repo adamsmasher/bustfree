@@ -4,7 +4,7 @@ INCLUDE "paddle.inc"
 
 SECTION "PaddleRAM", WRAM0
 PaddleX::           DS 2
-PaddleVelocityX:    DS 2
+PaddleVelocityX::   DS 2
 
 SECTION "Paddle", ROM0
 

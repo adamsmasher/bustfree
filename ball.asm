@@ -136,6 +136,24 @@ UpdateBallX:    ApplyVelocity BallVelocityX, BallX
                 CALL CheckStageCollideX
                 RET
 
+AddSpin:    LD HL, PaddleVelocityX
+            ; shift paddle velocity down by 4 bits
+            LD A, [HLI]
+            SWAP A
+            AND $0F
+            LD B, A
+            LD A, [HL]
+            SWAP A
+            AND $F0
+            OR B
+            ; add to ball velocity
+            LD HL, BallVelocityX
+            ADD [HL]
+            LD [HLI], A
+            RET NC
+            INC [HL]
+            RET
+
 CheckPaddleCollide: LD A, [BallY+1]
                     ; check if we're below the top of the paddle
                     ADD BALL_HEIGHT/2
@@ -157,6 +175,7 @@ CheckPaddleCollide: LD A, [BallY+1]
                     RET C
                     ; we collided, so reflect and reposition
                     Reflect BallVelocityY
+                    CALL AddSpin
                     CALL SpeedUp
                     ; new Y position is just above the paddle
                     LD HL, BallY
