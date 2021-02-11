@@ -18,14 +18,12 @@ InitBall::  ; init ball x
             LD HL, BallX
             XOR A                   ; subpixels = 0
             LD [HLI], A
-            LD A, 128               ; pixels = 128
-            LD [HL], A
+            LD [HL], 128            ; pixels = 128
             ; init ball y
             LD HL, BallY
             XOR A                   ; subpixels = 0
             LD [HLI], A
-            LD A, 128
-            LD [HL], A
+            LD [HL], 128
             ; TODO: maybe use the correct values here?
             LD A, $FF
             LD [BallRow], A
@@ -34,14 +32,12 @@ InitBall::  ; init ball x
             LD HL, BallVelocityX
             XOR A
             LD [HLI], A
-            LD A, $01
-            LD [HL], A
+            LD [HL], $01
             ; setup velocity Y (-1px)
             LD HL, BallVelocityY
-            LD A, $00
+            XOR A
             LD [HLI], A
-            LD A, $FF
-            LD [HL], A
+            LD [HL], $FF
             ; set ball state
             LD A, BALL_ON_PADDLE
             LD [BallState], A
@@ -65,8 +61,8 @@ SpeedUpM:    MACRO
         ; adds $10 if positive, otherwise $00
         LD HL, \1+1
         LD A, [HLD]
-        BIT 7,A
-        JR NZ, .neg\@
+        RLCA
+        JR C, .neg\@
         LD A, [HL]
         ADD $20
         LD [HLI], A
@@ -95,8 +91,7 @@ CheckLeftCollide:   LD A, [BallX+1]
                     LD HL, BallX
                     XOR A
                     LD [HLI], A
-                    LD A, 8
-                    LD [HL], A
+                    LD [HL], 8
                     RET
 
 CheckRightCollide:  LD A, [BallX+1]
@@ -109,8 +104,7 @@ CheckRightCollide:  LD A, [BallX+1]
                     LD HL, BallX
                     LD A, $FF
                     LD [HLI], A
-                    LD A, 159
-                    LD [HL], A
+                    LD [HL], 159
                     RET
 
 UpdateBallX:    ApplyVelocity BallVelocityX, BallX
@@ -146,8 +140,7 @@ CheckPaddleCollide: LD A, [BallY+1]
                     LD HL, BallY
                     LD A, $FF
                     LD [HLI], A
-                    LD A, PADDLE_Y - BALL_HEIGHT - 1
-                    LD [HL], A
+                    LD [HL], PADDLE_Y - BALL_HEIGHT - 1
                     RET
 
 CheckTopCollide:    LD A, [BallY+1]
@@ -160,8 +153,7 @@ CheckTopCollide:    LD A, [BallY+1]
                     LD HL, BallY
                     XOR A
                     LD [HLI], A
-                    LD A, 16
-                    LD [HL], A
+                    LD [HL], 16
                     RET
 
 CheckBottomCollide: LD A, [BallY+1]
@@ -228,8 +220,7 @@ CheckStageCollide:  LD H, HIGH(StageMap)
                     RET
 
 ; HL - ptr to collided brick in stage data
-ClearCollidedBrick: XOR A
-                    LD [HL], A
+ClearCollidedBrick: LD [HL], 0
                     LD A, [TotalBricks]
                     LD B, A
                     LD HL, BricksBroken
@@ -330,6 +321,5 @@ SetupBallOAM::  LD HL, ShadowOAM
                 LD [HLI], A
                 LD A, [BallX+1]
                 LD [HLI], A
-                LD A, BALL_TILE
-                LD [HL], A
+                LD [HL], BALL_TILE
                 RET

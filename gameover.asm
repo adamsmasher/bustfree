@@ -31,8 +31,7 @@ StartGameOver:: CALL LoadFont
                 LD HL, GameLoopPtr
                 LD A, LOW(GameOver)
                 LD [HLI], A
-                LD A, HIGH(GameOver)
-                LD [HL], A
+                LD [HL], HIGH(GameOver)
                 RET
 
 GameOver:   HALT

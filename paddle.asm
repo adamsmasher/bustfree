@@ -12,8 +12,7 @@ InitPaddle::    ; init paddle x
                 LD HL, PaddleX
                 XOR A                   ; subpixels = 0
                 LD [HLI], A
-                LD A, 128               ; pixels = 128
-                LD [HL], A
+                LD [HL], 128            ; pixels = 128
                 ; setup velocity X
                 LD HL, PaddleVelocityX
                 XOR A
@@ -48,8 +47,7 @@ CheckLeftCollide:   LD A, [PaddleX+1]
                     LD HL, PaddleX
                     XOR A
                     LD [HLI], A
-                    LD A, 8
-                    LD [HL], A
+                    LD [HL], 8
                     RET
 
 CheckRightCollide:  LD A, [PaddleX+1]
@@ -60,8 +58,7 @@ CheckRightCollide:  LD A, [PaddleX+1]
                     LD HL, PaddleX
                     LD A, $FF
                     LD [HLI], A
-                    LD A, 160 - PADDLE_WIDTH + 8 - 1
-                    LD [HL], A
+                    LD [HL], 160 - PADDLE_WIDTH + 8 - 1
                     RET
 
 UpdatePaddleX:  ApplyVelocity PaddleVelocityX, PaddleX
@@ -76,15 +73,13 @@ UpdatePaddle::  CALL HandleInput
 MoveLeft:       LD HL, PaddleVelocityX
                 LD A, $80
                 LD [HLI], A
-                LD A, $FE
-                LD [HL], A
+                LD [HL], $FE
                 RET
 
 MoveRight:      LD HL, PaddleVelocityX
                 LD A, $80
                 LD [HLI], A
-                LD A, 1
-                LD [HL], A
+                LD [HL], 1
                 RET
 
 StopPaddle:     LD HL, PaddleVelocityX
@@ -119,6 +114,5 @@ SetupPaddleOAM::    ; left
                     LD [HLI], A
                     LD A, PADDLE_TILE
                     LD [HLI], A
-                    LD A, %00100000         ; flip X
-                    LD [HL], A
+                    LD [HL], %00100000         ; flip X
                     RET

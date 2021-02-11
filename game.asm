@@ -16,8 +16,7 @@ StartGame:: CALL LoadBGGfx
             LD HL, GameLoopPtr
             LD A, LOW(Game)
             LD [HLI], A
-            LD A, HIGH(Game)
-            LD [HL], A
+            LD [HL], HIGH(Game)
             RET
 
 Game:   HALT

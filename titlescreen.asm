@@ -36,8 +36,7 @@ StartTitleScreen::  CALL LoadFont
                     LD HL, GameLoopPtr
                     LD A, LOW(TitleScreen)
                     LD [HLI], A
-                    LD A, HIGH(TitleScreen)
-                    LD [HL], A
+                    LD [HL], HIGH(TitleScreen)
                     RET
 
 TitleScreen:    HALT
