@@ -57,28 +57,50 @@ Reflect:    MACRO
 .nz\@       LD [HL], A
 ENDM
 
-SpeedUpM:    MACRO
+SpeedUpM:   MACRO
         ; adds $10 if positive, otherwise $00
         LD HL, \1+1
         LD A, [HLD]
         RLCA
         JR C, .neg\@
         LD A, [HL]
-        ADD $20
+        ADD $10
         LD [HLI], A
         JR NC, .done\@
         INC [HL]
         JR .done\@
 .neg\@  LD A, [HL]
-        ADD -$20
+        ADD -$10
         LD [HLI], A
         JR C, .done\@
         DEC [HL]
 .done\@
 ENDM
 
+SpeedCap:   MACRO
+            LD HL, \1+1
+            LD A, [HL]
+            BIT 7, A
+            JR NZ, .neg\@
+            CP 3
+            JR C, .done\@
+            LD A, 3
+            LD [HLD], A
+            LD [HL], 0
+            JR .done\@
+.neg\@      CP $FD
+            JR NC, .done\@
+            LD A, $FD
+            LD [HLD], A
+            LD [HL], 0
+.done\@
+ENDM
+
+
 SpeedUp:    SpeedUpM BallVelocityX
             SpeedUpM BallVelocityY
+            SpeedCap BallVelocityX
+            SpeedCap BallVelocityY
             RET
 
 CheckLeftCollide:   LD A, [BallX+1]
