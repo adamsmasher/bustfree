@@ -316,6 +316,14 @@ UpdateBallMoving:   CALL UpdateBallX
 
 LaunchBall: LD A, BALL_MOVING
             LD [BallState], A
+            LD HL, BallVelocityX
+            XOR A
+            LD [HLI], A
+            LD [HL], 1
+            LD HL, BallVelocityY
+            XOR A
+            LD [HLI], A
+            LD [HL], $FF
             RET
 
 PutBallOntoPaddle:  LD HL, BallX
