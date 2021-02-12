@@ -8,7 +8,8 @@ Score::         DS SCORE_BYTES
 
 SECTION "Game", ROM0
 
-StartGame:: CALL LoadBGGfx
+StartGame:: CALL LoadFont
+            CALL LoadBGGfx
             CALL LoadSpriteGfx
             CALL InitGame
             CALL DrawStage

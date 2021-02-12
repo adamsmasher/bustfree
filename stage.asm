@@ -27,7 +27,7 @@ SECTION "StageData", ROM0
 StageData:
 PUSHC
 CHARMAP ".", 0
-CHARMAP "#", $80
+CHARMAP "#", $B0
 ;   0123456789ABCDEF
 DB "..####..####..#."
 DB "..####..####..#."
