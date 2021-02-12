@@ -4,6 +4,7 @@ INCLUDE "game.inc"
 SECTION "GameVars", WRAM0
 NoOfLives::     DS 1
 BricksBroken::  DS 1
+Score::         DS SCORE_BYTES
 
 SECTION "Game", ROM0
 
@@ -43,10 +44,38 @@ TurnOnScreen:   ; enable display
                 LDH [$4B], A
                 RET
 
+ClearScore:     LD HL, Score
+                XOR A
+                LD B, SCORE_BYTES
+.loop           LD [HLI], A
+                DEC B
+                JR NZ, .loop
+                RET
+
+CapScore:       LD A, $99
+                LD B, SCORE_BYTES
+                LD HL, Score
+.loop           LD [HLI], A
+                DEC B
+                JR NZ, .loop
+                RET
+
+IncrementScore::    LD HL, Score
+.loop               LD A, L
+                    CP LOW(Score) + SCORE_BYTES
+                    JP Z, CapScore
+                    LD A, [HL]
+                    ADD 1           ; clears the carry flag, unlike INC
+                    DAA
+                    LD [HLI], A
+                    JR C, .loop
+                    RET
+
 InitGame:   LD A, STARTING_LIVES
             LD [NoOfLives], A
             XOR A
             LD [BricksBroken], A
+            CALL ClearScore
             CALL InitBall
             CALL InitPaddle
             CALL InitStage

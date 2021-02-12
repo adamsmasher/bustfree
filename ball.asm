@@ -262,6 +262,7 @@ CheckStageCollide:  LD H, HIGH(StageMap)
 
 ; HL - ptr to collided brick in stage data
 ClearCollidedBrick: LD [HL], 0
+                    CALL IncrementScore
                     LD A, [TotalBricks]
                     LD B, A
                     LD HL, BricksBroken
