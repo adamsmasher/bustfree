@@ -1,9 +1,17 @@
-* (nicer title screen)
-* continues?
+ALPHA 2
+
 * score
+
+ALPHA 3
+
+* 8x4 bricks
+* maybe improve collision detection?
+
+* (nicer title screen)
+* extra lives at particular scores
 * balance the game so that it's actually possible to win
   * adjust spin?
-* maybe improve collision detection?
+  * slow down ball speed ups?
 * better makefile
 * use hblank to stop drawing sprites over status bar
 * some sort of ending
@@ -12,7 +20,6 @@
 * bug where moving left at high speed when launching ball causes it to shoot downwards
 * high score table
 * multiple levels
-* 8x4 bricks
 * power ups
   + multi-ball
   + laser
