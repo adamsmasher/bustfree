@@ -13,23 +13,49 @@ MAX_VRAM_UPDATES    EQU 2
 VRAMUpdates::       DS vramUpdate_SIZEOF * MAX_VRAM_UPDATES
 VRAMUpdateLen::     DS 1
 
+StatusDirty::       DS 1
+StatusBar::         DS 20
+
 SECTION "VBlank", ROM0
 VBlank: PUSH AF
         PUSH BC
         PUSH DE
         PUSH HL
         CALL RunVBlankUpdates
+        LD A, [StatusDirty]
+        AND A
+        CALL NZ, CopyStatus
         CALL OAMDMA
         XOR A
         LD [VRAMUpdateLen], A
+        LD [StatusDirty], A
         POP HL
         POP DE
         POP BC
         POP AF
         RETI
 
+CopyStatus:     LD HL, StatusBar
+                LD DE, $9C00
+                LD B, 20
+.loop           LD A, [HLI]
+                LD [DE], A
+                INC E
+                DEC B
+                JR NZ, .loop
+                RET
+
+ClearStatus::   XOR A
+                LD HL, StatusBar
+                LD B, 20
+.loop           LD [HLI], A
+                DEC B
+                JR NZ, .loop
+                RET
+
 InitVBlank::    XOR A
                 LD [VRAMUpdateLen], A
+                LD [StatusDirty], A
                 RET
 
 RunVBlankUpdates:   LD A, [VRAMUpdateLen]

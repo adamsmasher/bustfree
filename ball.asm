@@ -206,15 +206,7 @@ CheckBottomCollide: LD A, [BallY+1]
                     JP Z, GameOver
                     LD A, BALL_ON_PADDLE
                     LD [BallState], A
-                    LD HL, VRAMUpdates
-                    LD A, [NoOfLives]
-                    LD [HLI], A
-                    LD A, $9C
-                    LD [HLI], A
-                    XOR A
-                    LD [HLI], A
-                    LD A, 1
-                    LD [VRAMUpdateLen], A
+                    CALL DrawStatus
                     RET
 
 UpdateBallRow:      LD A, [BallY+1]

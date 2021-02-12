@@ -87,10 +87,17 @@ GameOver::  CALL TurnOffScreen
             CALL StartGameOver
             RET
 
-DrawStatus: LD A, BALL_TILE
-            LD HL, $9C00
-            LD B, STARTING_LIVES
+DrawLives:  LD A, [NoOfLives]
+            LD B, A
+            LD A, BALL_TILE
+            LD HL, StatusBar
 .loop       LD [HLI], A
             DEC B
             JR NZ, .loop
             RET
+
+DrawStatus::    CALL ClearStatus
+                CALL DrawLives
+                LD A, 1
+                LD [StatusDirty], A
+                RET
