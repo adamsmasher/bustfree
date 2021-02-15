@@ -13,11 +13,9 @@ ALPHA 3
   * adjust spin?
   * slow down ball speed ups?
 * better makefile
-* use hblank to stop drawing sprites over status bar
 * some sort of ending
 * sound + music
 * refactor: move ball -> stage collision code out of ball.asm?
-* bug where moving left at high speed when launching ball causes it to shoot downwards
 * high score table
 * multiple levels
 * power ups
