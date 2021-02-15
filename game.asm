@@ -1,6 +1,8 @@
 INCLUDE "ball.inc"
 INCLUDE "game.inc"
 
+WINDOW_Y        EQU 136
+
 SECTION "GameVars", WRAM0
 NoOfLives::     DS 1
 BricksBroken::  DS 1
@@ -8,7 +10,10 @@ Score::         DS SCORE_BYTES
 
 SECTION "Game", ROM0
 
-StartGame:: CALL LoadFont
+StartGame:: XOR A
+            LD [VBlankFlag], A
+            CALL SetupWindowInterrupt
+            CALL LoadFont
             CALL LoadBGGfx
             CALL LoadSpriteGfx
             CALL InitGame
@@ -21,13 +26,37 @@ StartGame:: CALL LoadFont
             LD [HL], HIGH(Game)
             RET
 
-Game:   HALT
+SetupWindowInterrupt:   ; fire interrupt on LYC=LY coincidence
+                        LD A, %01000000
+                        LDH [$41], A
+                        ; set LYC to the top of the window
+                        LD A, WINDOW_Y
+                        LDH [$45], A
+                        ; enable STAT interrupt
+                        LD HL, $FFFF
+                        SET 1, [HL]
+                        RET
+
+DisableWindowInterrupt: ; disable stat interrupt
+                        LD HL, $FFFF
+                        RES 1, [HL]
+                        RET
+
+Game:   CALL WaitForVBlank
         CALL UpdateInput
         CALL UpdateBall
         CALL UpdatePaddle
         CALL SetupBallOAM
         CALL SetupPaddleOAM
         RET
+
+WaitForVBlank:  LD HL, VBlankFlag
+                XOR A
+.loop           HALT
+                CP [HL]
+                JR Z, .loop
+                LD [HL], A
+                RET
 
 TurnOnScreen:   ; enable display
                 ; BG tiles at $8800
@@ -85,7 +114,7 @@ InitGame:   LD A, STARTING_LIVES
             CALL InitStage
             RET
 
-GameOver::  HALT
+GameOver::  CALL WaitForVBlank
             CALL TurnOffScreen
             CALL DisableWindowInterrupt
             CALL ClearVRAM

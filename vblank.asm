@@ -1,6 +1,17 @@
 SECTION "VBlankInt", ROM0[$0040]
 JP VBlank
 
+SECTION "StatInt", ROM0[$0048]
+JP StatInt
+
+SECTION "Stat", ROM0
+
+StatInt:    PUSH HL
+            LD HL, $FF40
+            RES 1, [HL]
+            POP HL
+            RETI
+
 SECTION "VBlankRAM", WRAM0
                     RSRESET
 vramUpdate_Addr     RW 1
@@ -16,11 +27,17 @@ VRAMUpdateLen::     DS 1
 StatusDirty::       DS 1
 StatusBar::         DS 20
 
+SpritesEnabled::    DS 1
+VBlankFlag::        DS 1
+
 SECTION "VBlank", ROM0
 VBlank: PUSH AF
         PUSH BC
         PUSH DE
         PUSH HL
+        LD A, [SpritesEnabled]
+        AND A
+        CALL NZ, EnableSprites
         CALL RunVBlankUpdates
         LD A, [StatusDirty]
         AND A
@@ -29,11 +46,17 @@ VBlank: PUSH AF
         XOR A
         LD [VRAMUpdateLen], A
         LD [StatusDirty], A
+        LD A, 1
+        LD [VBlankFlag], A
         POP HL
         POP DE
         POP BC
         POP AF
         RETI
+
+EnableSprites:  LD HL, $FF40
+                SET 1, [HL]
+                RET
 
 CopyStatus:     LD HL, StatusBar
                 LD DE, $9C00
@@ -56,6 +79,7 @@ ClearStatus::   XOR A
 InitVBlank::    XOR A
                 LD [VRAMUpdateLen], A
                 LD [StatusDirty], A
+                LD [SpritesEnabled], A
                 RET
 
 RunVBlankUpdates:   LD A, [VRAMUpdateLen]
