@@ -3,6 +3,10 @@ ALPHA 3
 * 8x4 bricks
 * maybe improve collision detection?
 
+* animations?
+  * ball spinning
+  * bricks exploding
+  * on paddle collision
 * (nicer title screen)
 * extra lives at particular scores
 * balance the game so that it's actually possible to win
