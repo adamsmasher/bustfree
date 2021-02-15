@@ -11,6 +11,7 @@ Main:   DI
         CALL InitVBlank
         CALL InitShadowOAM
         EI
+        HALT
         CALL TurnOffScreen
         CALL ClearVRAM
         CALL InitPalette
@@ -29,8 +30,7 @@ InitInterrupts: LD A, 1         ; enable vblank
                 LDH [$FF], A
                 RET
 
-TurnOffScreen:: HALT                    ; wait for vblank
-                XOR A                   ; turn the screen off
+TurnOffScreen:: XOR A                   ; turn the screen off
                 LDH [$40], A
                 RET
 

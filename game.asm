@@ -77,13 +77,17 @@ InitGame:   LD A, STARTING_LIVES
             LD [NoOfLives], A
             XOR A
             LD [BricksBroken], A
+            LD A, 1
+            LD [SpritesEnabled], A
             CALL ClearScore
             CALL InitBall
             CALL InitPaddle
             CALL InitStage
             RET
 
-GameOver::  CALL TurnOffScreen
+GameOver::  HALT
+            CALL TurnOffScreen
+            CALL DisableWindowInterrupt
             CALL ClearVRAM
             CALL StartGameOver
             RET
