@@ -27,9 +27,9 @@ SECTION "StageData", ROM0
 StageData:
 PUSHC
 CHARMAP ".", 0
-CHARMAP "-", $B0
-CHARMAP "_", $B1
-CHARMAP "=", $B2
+CHARMAP "-", $10
+CHARMAP "_", $01
+CHARMAP "=", $11
 ;   0123456789ABCDEF
 DB "..====..====..=."
 DB "..====..====..=."
@@ -54,8 +54,13 @@ InitStageMap:   LD HL, StageData
 InitTotalBricks:    LD HL, StageMap
                     LD B, 128
                     LD C, 0
-.loop               LD A, [HLI]
-                    AND A
+.loop               LD A, [HL]
+                    ; check bottom brick
+                    AND $0F
+                    JR Z, .top
+                    INC C
+.top                LD A, [HLI]
+                    AND $F0
                     JR Z, .z
                     INC C
 .z                  DEC B

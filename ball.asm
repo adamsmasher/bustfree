@@ -11,6 +11,8 @@ BallVelocityY:  DS 2
 BallState:      DS 1
 BallRow:        DS 1
 BallCol:        DS 1
+UpdateTile:     DS 1
+Collided:       DS 1
 
 SECTION "Ball", ROM0
 
@@ -252,61 +254,108 @@ CheckStageCollide:  LD H, HIGH(StageMap)
                     AND A
                     RET
 
-; HL - ptr to collided brick in stage data
-ClearCollidedBrick: LD [HL], 0
-                    CALL IncrementScore
-                    LD A, [TotalBricks]
-                    LD B, A
-                    LD HL, BricksBroken
-                    LD A, [HL]
-                    INC A
-                    CP B
-                    JP Z, GameOver
-                    LD [HL], A
-                    LD D, $98
-                    LD A, [BallRow]
-                    ADD 2
-                    SWAP A
-                    SLA A
-                    LD E, A
-                    JR NC, .nc
-                    INC D
-.nc                 LD A, [BallCol]
-                    ADD 2
-                    ADD E
-                    LD E, A
-                    LD A, [VRAMUpdateLen]
-                    SLA A
-                    SLA A
-                    ADD LOW(VRAMUpdates)
-                    LD L, A
-                    LD H, HIGH(VRAMUpdates)
-                    LD A, E
-                    LD [HLI], A
-                    LD A, D
-                    LD [HLI], A
-                    XOR A
-                    LD [HLI], A
-                    LD HL, VRAMUpdateLen
-                    INC [HL]
-                    RET
+OnBrickCollide: CALL SpeedUp
+                CALL IncrementScore
+                LD A, [TotalBricks]
+                LD B, A
+                LD HL, BricksBroken
+                LD A, [HL]
+                INC A
+                CP B
+                JP Z, GameOver
+                LD [HL], A
+                RET
+
+UpdateMap:    ; compute destination and put in DE
+              LD D, $98
+              LD A, [BallRow]
+              ADD 2
+              SWAP A
+              SLA A
+              LD E, A
+              JR NC, .nc
+              INC D
+.nc           LD A, [BallCol]
+              ADD 2
+              ADD E
+              LD E, A
+              ; get pointer to next free update slot
+              LD A, [VRAMUpdateLen]
+              SLA A
+              SLA A
+              ADD LOW(VRAMUpdates)
+              LD L, A
+              LD H, HIGH(VRAMUpdates)
+              ; write destination
+              LD A, E
+              LD [HLI], A
+              LD A, D
+              LD [HLI], A
+              ; write tile to write
+              LD A, [UpdateTile]
+              LD [HLI], A
+              ; increment number of used slots
+              LD HL, VRAMUpdateLen
+              INC [HL]
+              RET
+
+; HL - contains pointer to tile collided with
+CheckStageCollide8x4Top:    LD A, [HL]
+                            AND $F0
+                            RET Z
+                            LD A, [HL]
+                            AND $0F
+                            LD [HL], A
+                            LD [UpdateTile], A
+                            CALL UpdateMap
+                            LD A, 1
+                            LD [Collided], A
+                            RET
+
+; HL - contains pointer to tile collided with
+CheckStageCollide8x4Bottom: LD A, [HL]
+                            AND $0F
+                            RET Z
+                            LD A, [HL]
+                            AND $F0
+                            LD [HL], A
+                            LD [UpdateTile], A
+                            CALL UpdateMap
+                            LD A, 1
+                            LD [Collided], A
+                            RET
+
+CheckStageCollide8x4:   XOR A
+                        LD [Collided], A
+                        LD A, [BallY+1]
+                        ADD BALL_HEIGHT/2
+                        AND %00000100
+                        JP NZ, CheckStageCollide8x4Bottom
+                        JP CheckStageCollide8x4Top
 
 CheckStageCollideX: CALL CheckBallInBounds
                     RET NC
                     CALL CheckStageCollide
                     RET Z
-                    CALL ClearCollidedBrick
+                    CALL CheckStageCollide8x4
+                    LD HL, Collided
+                    LD A, [Collided]
+                    AND A
+                    RET Z
+                    CALL OnBrickCollide
                     Reflect BallVelocityX
-                    CALL SpeedUp
                     RET
 
 CheckStageCollideY: CALL CheckBallInBounds
                     RET NC
                     CALL CheckStageCollide
                     RET Z
-                    CALL ClearCollidedBrick
+                    CALL CheckStageCollide8x4
+                    LD A, [Collided]
+                    AND A
+                    RET Z
+                    CALL OnBrickCollide
                     Reflect BallVelocityY
-                    CALL SpeedUp
                     RET
 
 UpdateBallY:    ApplyVelocity BallVelocityY, BallY
