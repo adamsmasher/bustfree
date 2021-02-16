@@ -12,6 +12,7 @@ SECTION "Game", ROM0
 
 StartGame:: XOR A
             LD [VBlankFlag], A
+            CALL InitGameStatHandler
             CALL SetupWindowInterrupt
             CALL LoadFont
             CALL LoadBGGfx
@@ -159,3 +160,13 @@ DrawStatus::    CALL ClearStatus
                 LD A, 1
                 LD [StatusDirty], A
                 RET
+
+GameStatHandler:    LD HL, $FF40
+                    RES 1, [HL]
+                    RET
+
+InitGameStatHandler:    LD HL, StatHandler
+                        LD A, LOW(GameStatHandler)
+                        LD [HLI], A
+                        LD [HL], HIGH(GameStatHandler)
+                        RET

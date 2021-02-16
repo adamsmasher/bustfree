@@ -1,17 +1,6 @@
 SECTION "VBlankInt", ROM0[$0040]
 JP VBlank
 
-SECTION "StatInt", ROM0[$0048]
-JP StatInt
-
-SECTION "Stat", ROM0
-
-StatInt:    PUSH HL
-            LD HL, $FF40
-            RES 1, [HL]
-            POP HL
-            RETI
-
 SECTION "VBlankRAM", WRAM0
                     RSRESET
 vramUpdate_Addr     RW 1
