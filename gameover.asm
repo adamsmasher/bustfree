@@ -23,8 +23,7 @@ DrawGameOver:   LD HL, GameOverTxt
 
 SECTION "GameOver", ROM0
 
-StartGameOver:: XOR A
-                LD [SpritesEnabled], A
+StartGameOver:: CALL InitVBlank
                 CALL LoadFont
                 CALL DrawGameOver
                 CALL TurnOnScreen

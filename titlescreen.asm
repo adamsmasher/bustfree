@@ -30,9 +30,7 @@ DrawTitleScreen:    LD HL, BustFreeTxt
 
 SECTION "TitleScreen", ROM0
 
-StartTitleScreen::  XOR A
-                    LD [SpritesEnabled], A
-                    CALL LoadFont
+StartTitleScreen::  CALL LoadFont
                     CALL DrawTitleScreen
                     CALL TurnOnScreen
                     LD HL, GameLoopPtr

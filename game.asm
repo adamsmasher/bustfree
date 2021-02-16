@@ -10,8 +10,7 @@ Score::         DS SCORE_BYTES
 
 SECTION "Game", ROM0
 
-StartGame:: XOR A
-            LD [VBlankFlag], A
+StartGame:: CALL InitGameVBlank
             CALL InitGameStatHandler
             CALL SetupWindowInterrupt
             CALL LoadFont
@@ -107,8 +106,6 @@ InitGame:   LD A, STARTING_LIVES
             LD [NoOfLives], A
             XOR A
             LD [BricksBroken], A
-            LD A, 1
-            LD [SpritesEnabled], A
             CALL ClearScore
             CALL InitBall
             CALL InitPaddle
