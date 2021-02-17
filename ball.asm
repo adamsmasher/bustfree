@@ -261,18 +261,6 @@ CheckStageCollide:  LD H, HIGH(StageMap)
                     AND A
                     RET
 
-OnBrickCollide: CALL SpeedUp
-                CALL IncrementScore
-                LD A, [TotalBricks]
-                LD B, A
-                LD HL, BricksBroken
-                LD A, [HL]
-                INC A
-                CP B
-                JP Z, GameOver
-                LD [HL], A
-                RET
-
 UpdateMap:    ; compute destination and put in DE
               LD D, $98
               LD A, [BallRow]
@@ -349,10 +337,10 @@ CheckStageCollideX: CALL CheckBallInBounds
                     LD A, [Collided]
                     AND A
                     RET Z
-                    CALL OnBrickCollide
+                    CALL SpeedUp
                     Reflect BallVelocityX
                     CALL ApplyVelocityX
-                    RET
+                    CALL OnBrickCollide
 
 CheckStageCollideY: CALL CheckBallInBounds
                     RET NC
@@ -362,9 +350,10 @@ CheckStageCollideY: CALL CheckBallInBounds
                     LD A, [Collided]
                     AND A
                     RET Z
-                    CALL OnBrickCollide
+                    CALL SpeedUp
                     Reflect BallVelocityY
                     CALL ApplyVelocityY
+                    CALL OnBrickCollide
                     RET
 
 UpdateBallY:    CALL ApplyVelocityY
