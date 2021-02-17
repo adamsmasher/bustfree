@@ -131,8 +131,15 @@ CheckRightCollide:  LD A, [BallX+1]
                     LD [HL], 159
                     RET
 
-UpdateBallX:    ApplyVelocity BallVelocityX, BallX
+ApplyVelocityX: ApplyVelocity BallVelocityX, BallX
                 CALL UpdateBallCol
+                RET
+
+ApplyVelocityY: ApplyVelocity BallVelocityY, BallY
+                CALL UpdateBallRow
+                RET
+
+UpdateBallX:    CALL ApplyVelocityX
                 CALL CheckLeftCollide
                 CALL CheckRightCollide
                 CALL CheckStageCollideX
@@ -344,6 +351,7 @@ CheckStageCollideX: CALL CheckBallInBounds
                     RET Z
                     CALL OnBrickCollide
                     Reflect BallVelocityX
+                    CALL ApplyVelocityX
                     RET
 
 CheckStageCollideY: CALL CheckBallInBounds
@@ -356,10 +364,10 @@ CheckStageCollideY: CALL CheckBallInBounds
                     RET Z
                     CALL OnBrickCollide
                     Reflect BallVelocityY
+                    CALL ApplyVelocityY
                     RET
 
-UpdateBallY:    ApplyVelocity BallVelocityY, BallY
-                CALL UpdateBallRow
+UpdateBallY:    CALL ApplyVelocityY
                 CALL CheckPaddleCollide
                 CALL CheckTopCollide
                 CALL CheckBottomCollide
