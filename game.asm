@@ -118,7 +118,41 @@ GameOver::  CALL WaitForVBlank
             CALL StartGameOver
             RET
 
-OnBrickCollide::    CALL IncrementScore
+ClearBrick:   ; compute destination and put in DE
+              LD D, $98
+              LD A, [BallRow]
+              ADD 2
+              SWAP A
+              SLA A
+              LD E, A
+              JR NC, .nc
+              INC D
+.nc           LD A, [BallCol]
+              ADD 2
+              ADD E
+              LD E, A
+              ; get pointer to next free update slot
+              LD A, [VRAMUpdateLen]
+              SLA A
+              SLA A
+              ADD LOW(VRAMUpdates)
+              LD L, A
+              LD H, HIGH(VRAMUpdates)
+              ; write destination
+              LD A, E
+              LD [HLI], A
+              LD A, D
+              LD [HLI], A
+              ; write tile to write
+              LD A, [UpdateTile]
+              LD [HLI], A
+              ; increment number of used slots
+              LD HL, VRAMUpdateLen
+              INC [HL]
+              RET
+
+OnBrickCollide::    CALL ClearBrick
+                    CALL IncrementScore
                     LD A, [TotalBricks]
                     LD B, A
                     LD HL, BricksBroken

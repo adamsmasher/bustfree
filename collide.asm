@@ -2,7 +2,7 @@ include "ball.inc"
 INCLUDE "paddle.inc"
 
 SECTION "CollideRAM", WRAM0
-UpdateTile:     DS 1
+UpdateTile::    DS 1
 Collided:       DS 1
 
 SECTION "Collide", ROM0
@@ -113,7 +113,6 @@ CheckStageCollide8x4Top:    LD A, [HL]
                             AND $0F
                             LD [HL], A
                             LD [UpdateTile], A
-                            CALL UpdateMap
                             LD A, 1
                             LD [Collided], A
                             RET
@@ -126,7 +125,6 @@ CheckStageCollide8x4Bottom: LD A, [HL]
                             AND $F0
                             LD [HL], A
                             LD [UpdateTile], A
-                            CALL UpdateMap
                             LD A, 1
                             LD [Collided], A
                             RET
@@ -158,10 +156,10 @@ CheckStageCollideX::    CALL CheckBallInBounds
                         LD A, [Collided]
                         AND A
                         RET Z
+                        CALL OnBrickCollide
                         CALL SpeedUpBall
                         CALL ReflectBallX
                         CALL ApplyBallVelocityX
-                        CALL OnBrickCollide
                         RET
 
 CheckStageCollideY::    CALL CheckBallInBounds
@@ -172,41 +170,8 @@ CheckStageCollideY::    CALL CheckBallInBounds
                         LD A, [Collided]
                         AND A
                         RET Z
+                        CALL OnBrickCollide
                         CALL SpeedUpBall
                         CALL ReflectBallY
                         CALL ApplyBallVelocityY
-                        CALL OnBrickCollide
                         RET
-
-UpdateMap:    ; compute destination and put in DE
-              LD D, $98
-              LD A, [BallRow]
-              ADD 2
-              SWAP A
-              SLA A
-              LD E, A
-              JR NC, .nc
-              INC D
-.nc           LD A, [BallCol]
-              ADD 2
-              ADD E
-              LD E, A
-              ; get pointer to next free update slot
-              LD A, [VRAMUpdateLen]
-              SLA A
-              SLA A
-              ADD LOW(VRAMUpdates)
-              LD L, A
-              LD H, HIGH(VRAMUpdates)
-              ; write destination
-              LD A, E
-              LD [HLI], A
-              LD A, D
-              LD [HLI], A
-              ; write tile to write
-              LD A, [UpdateTile]
-              LD [HLI], A
-              ; increment number of used slots
-              LD HL, VRAMUpdateLen
-              INC [HL]
-              RET
