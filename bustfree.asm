@@ -9,6 +9,7 @@ Main:   DI
         LD SP, $E000
         CALL InitInterrupts
         CALL InitVBlank
+        CALL InitStat
         CALL InitShadowOAM
         EI
         HALT
