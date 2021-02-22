@@ -49,14 +49,6 @@ Game:   CALL WaitForVBlank
         CALL SetupPaddleOAM
         RET
 
-WaitForVBlank:  LD HL, VBlankFlag
-                XOR A
-.loop           HALT
-                CP [HL]
-                JR Z, .loop
-                LD [HL], A
-                RET
-
 TurnOnScreen:   ; enable display
                 ; BG tiles at $8800
                 ; map at $9800

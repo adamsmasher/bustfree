@@ -16,7 +16,6 @@ TitleScreenScrollX2:    DS 1
 TitleScreenPalette:     DS 1
 PressStartPalette:      DS 1
 Delay:                  DS 1
-VBlankFlag:             DS 1
 
 SECTION "TitleScreenData", ROM0
 PUSHC
@@ -300,14 +299,6 @@ TurnOnScreen:   ; enable display
                 LDH [$40], A
                 RET
 
-WaitForVBlank:  LD HL, VBlankFlag
-                XOR A
-.loop           HALT
-                CP [HL]
-                JR Z, .loop
-                LD [HL], A
-                RET
-
 VBlank: LD A, [TitleScreenPalette]
         LDH [$47], A
         LD A, [TitleScreenScrollX1]
@@ -320,8 +311,6 @@ VBlank: LD A, [TitleScreenPalette]
         LD [HL], HIGH(Stat1)
         LD A, 45
         LDH [$45], A
-        LD A, 1
-        LD [VBlankFlag], A
         RET
 
 Stat1:  LD A, [TitleScreenScrollX2]

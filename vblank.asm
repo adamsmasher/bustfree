@@ -3,6 +3,7 @@ JP VBlank
 
 SECTION "VBlankRAM", WRAM0
 VBlankHandler:: DS 2
+VBlankFlag:     DS 1
 
 SECTION "VBlank", ROM0
 VBlank: PUSH AF
@@ -14,6 +15,8 @@ VBlank: PUSH AF
         LD H, [HL]
         LD L, A
         CALL RunHandler
+        LD A, 1
+        LD [VBlankFlag], A
         POP HL
         POP DE
         POP BC
@@ -26,18 +29,11 @@ InitVBlank::    LD HL, VBlankHandler
                 LD [HL], HIGH(DummyHandler)
                 RET
 
-RunVBlankUpdates:   LD A, [VRAMUpdateLen]
-                    AND A
-                    RET Z
-                    LD B, A
-                    LD HL, VRAMUpdates
-.loop               LD A, [HLI]         ; get dest addr
-                    LD E, A
-                    LD A, [HLI]
-                    LD D, A
-                    LD A, [HLI]         ; get data
-                    LD [DE], A
-                    INC L               ; skip padding
-                    DEC B
-                    JR NZ, .loop
-                    RET
+WaitForVBlank:: LD HL, VBlankFlag
+                XOR A
+.loop           HALT
+                CP [HL]
+                JR Z, .loop
+                LD [HL], A
+                RET
+

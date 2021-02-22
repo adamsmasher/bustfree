@@ -14,8 +14,6 @@ VRAMUpdateLen::     DS 1
 StatusDirty::       DS 1
 StatusBar::         DS 20
 
-VBlankFlag::        DS 1
-
 SECTION "GameVBlank", ROM0
 VBlank: CALL EnableSprites
         CALL RunVBlankUpdates
@@ -26,8 +24,6 @@ VBlank: CALL EnableSprites
         XOR A
         LD [VRAMUpdateLen], A
         LD [StatusDirty], A
-        LD A, 1
-        LD [VBlankFlag], A
         RET
 
 EnableSprites:  LD HL, $FF40
@@ -55,7 +51,6 @@ ClearStatus::   XOR A
 InitGameVBlank::   XOR A
                    LD [VRAMUpdateLen], A
                    LD [StatusDirty], A
-                   LD [VBlankFlag], A
                    LD HL, VBlankHandler
                    LD A, LOW(VBlank)
                    LD [HLI], A
