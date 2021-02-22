@@ -9,6 +9,32 @@ STATE_WAITING       EQU 3
 FADE_DELAY          EQU 5
 FLASH_DELAY         EQU 45
 
+BUST_FIRST_TILE_ADDR        EQU $8B00
+FREE_FIRST_TILE_ADDR        EQU $8E20
+KATAKANA_FIRST_TILE_ADDR    EQU $9200
+
+BUST_FIRST_TILE        EQU (BUST_FIRST_TILE_ADDR & $0FF0) >> 4
+FREE_FIRST_TILE        EQU (FREE_FIRST_TILE_ADDR & $0FF0) >> 4
+KATAKANA_FIRST_TILE    EQU (KATAKANA_FIRST_TILE_ADDR & $0FF0) >> 4
+
+BUST_POS            EQU $9800
+FREE_POS            EQU $9900
+PRESS_START_POS     EQU $9A25
+KATAKANA_POS        EQU $984B
+
+INITIAL_SCROLL_X    EQU $60
+FINAL_SCROLL_X2     EQU $D8
+
+FREE_SCROLL_ADJ_Y           EQU 20
+PRESS_START_SCROLL_ADJ_Y    EQU 24
+
+SCROLL_SPEED    EQU 4
+
+FLASH_TIME      EQU 24
+
+FREE_LINE           EQU 45
+PRESS_START_LINE    EQU 90
+
 SECTION "TitleScreenRAM", WRAM0
 TitleScreenState:       DS 1
 TitleScreenScrollX1:    DS 1
@@ -34,7 +60,7 @@ KatakanaLogo:   INCBIN "basutofurii.gfx"
 .end
 
 DrawPressStart: LD HL, PressStartTxt
-                LD DE, $9A25
+                LD DE, PRESS_START_POS
                 LD B, PressStartTxt.end - PressStartTxt
 .loop           LD A, [HLI]
                 LD [DE], A
@@ -44,7 +70,7 @@ DrawPressStart: LD HL, PressStartTxt
                 RET
 
 LoadBustLogo:   LD HL, BustLogo
-                LD DE, $8B00
+                LD DE, BUST_FIRST_TILE_ADDR
                 LD BC, BustLogo.end - BustLogo
 .loop           LD A, [HLI]
                 LD [DE], A
@@ -56,7 +82,7 @@ LoadBustLogo:   LD HL, BustLogo
                 RET
 
 LoadFreeLogo:   LD HL, FreeLogo
-                LD DE, $8E20
+                LD DE, FREE_FIRST_TILE_ADDR
                 LD BC, FreeLogo.end - FreeLogo
 .loop           LD A, [HLI]
                 LD [DE], A
@@ -68,7 +94,7 @@ LoadFreeLogo:   LD HL, FreeLogo
                 RET
 
 LoadKatakanaLogo:   LD HL, KatakanaLogo
-                    LD DE, $9200
+                    LD DE, KATAKANA_FIRST_TILE_ADDR
                     LD B, KatakanaLogo.end - KatakanaLogo
 .loop               LD A, [HLI]
                     LD [DE], A
@@ -94,8 +120,8 @@ FREE_HEIGHT EQU 5
 KATAKANA_WIDTH  EQU 6
 KATAKANA_HEIGHT EQU 2
 
-DrawBustLogo:   LD HL, $9800
-                LD A, $B0
+DrawBustLogo:   LD HL, BUST_POS
+                LD A, BUST_FIRST_TILE
                 LD B, BUST_HEIGHT
 .row            LD C, BUST_WIDTH
 .loop           LD [HLI], A
@@ -111,8 +137,8 @@ DrawBustLogo:   LD HL, $9800
                 JR NZ, .row
                 RET
 
-DrawFreeLogo:   LD HL, $9900
-                LD A, $E2
+DrawFreeLogo:   LD HL, FREE_POS
+                LD A, FREE_FIRST_TILE
                 LD B, FREE_HEIGHT
 .row            LD C, FREE_WIDTH
 .loop           LD [HLI], A
@@ -128,8 +154,8 @@ DrawFreeLogo:   LD HL, $9900
                 JR NZ, .row
                 RET
 
-DrawKatakanaLogo:   LD HL, $984B
-                    LD A, $20
+DrawKatakanaLogo:   LD HL, KATAKANA_POS
+                    LD A, KATAKANA_FIRST_TILE
                     LD B, KATAKANA_HEIGHT
 .row                LD C, KATAKANA_WIDTH
 .loop               LD [HLI], A
@@ -173,7 +199,7 @@ InitHandlers:   LD HL, VBlankHandler
 
 StartTitleScreen::  LD A, STATE_SCROLLING1
                     LD [TitleScreenState], A
-                    LD A, $60
+                    LD A, INITIAL_SCROLL_X
                     LD [TitleScreenScrollX1], A
                     LD [TitleScreenScrollX2], A
                     LD A, $E4
@@ -189,7 +215,7 @@ StartTitleScreen::  LD A, STATE_SCROLLING1
                     LD [HL], HIGH(TitleScreen)
                     RET
 
-StartWaiting:   LD B, 24
+StartWaiting:   LD B, FLASH_TIME
 .loop           CALL WaitForVBlank
                 DEC B
                 JR NZ, .loop
@@ -212,7 +238,7 @@ StartScroll2:   LD A, STATE_SCROLLING2
 
 StartFading:    XOR A
                 LD [TitleScreenScrollX1], A
-                LD A, $D8
+                LD A, FINAL_SCROLL_X2
                 LD [TitleScreenScrollX2], A
                 LD A, STATE_FADING
                 LD [TitleScreenState], A
@@ -222,7 +248,7 @@ StartFading:    XOR A
 
 HandleScrolling1:   LD HL, TitleScreenScrollX1
                     LD A, [HL]
-                    SUB 4
+                    SUB SCROLL_SPEED
                     LD [HL], A
                     JP Z, StartScroll2
                     LD A, [KeysPressed]
@@ -232,10 +258,10 @@ HandleScrolling1:   LD HL, TitleScreenScrollX1
 
 HandleScrolling2:   LD HL, TitleScreenScrollX2
                     LD A, [HL]
-                    ADD 4
+                    ADD SCROLL_SPEED
                     LD [HL], A
                     LD A, [HL]
-                    CP $D8
+                    CP FINAL_SCROLL_X2
                     JP Z, StartFading
                     LD A, [KeysPressed]
                     BIT INPUT_START, A
@@ -309,23 +335,23 @@ VBlank: LD A, [TitleScreenPalette]
         LD A, LOW(Stat1)
         LD [HLI], A
         LD [HL], HIGH(Stat1)
-        LD A, 45
+        LD A, FREE_LINE
         LDH [$45], A
         RET
 
 Stat1:  LD A, [TitleScreenScrollX2]
         LDH [$43], A
-        LD A, 20
+        LD A, FREE_SCROLL_ADJ_Y
         LDH [$42], A
         LD HL, StatHandler
         LD A, LOW(Stat2)
         LD [HLI], A
         LD [HL], HIGH(Stat2)
-        LD A, 90
+        LD A, PRESS_START_LINE
         LDH [$45], A
         RET
 
-Stat2:  LD A, 24
+Stat2:  LD A, PRESS_START_SCROLL_ADJ_Y
         LDH [$42], A
         XOR A
         LDH [$43], A
