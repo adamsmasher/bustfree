@@ -194,7 +194,7 @@ PutBallOntoPaddle:  LD HL, BallX
                     XOR A
                     LD [HLI], A
                     LD A, PADDLE_Y
-                    SUB BALL_HEIGHT
+                    SUB 8 - (8 - BALL_HEIGHT)/2
                     LD [HL], A
                     RET
 

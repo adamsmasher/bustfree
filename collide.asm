@@ -8,7 +8,7 @@ Collided:       DS 1
 SECTION "Collide", ROM0
 
 CheckLeftCollide::  LD A, [BallX+1]
-                    CP 8
+                    CP 8 - (8 - BALL_WIDTH)/2
                     RET NC
                     ; we collided, so reflect and reposition
                     CALL ReflectBallX
@@ -21,7 +21,7 @@ CheckLeftCollide::  LD A, [BallX+1]
                     RET
 
 CheckRightCollide:: LD A, [BallX+1]
-                    CP 160
+                    CP 160 + (8 - BALL_WIDTH)/2
                     RET C
                     ; we collided, so reflect and reposition
                     CALL ReflectBallX
@@ -35,7 +35,7 @@ CheckRightCollide:: LD A, [BallX+1]
 
 CheckPaddleCollide::    LD A, [BallY+1]
                         ; check if we're below the top of the paddle
-                        ADD BALL_HEIGHT/2
+                        ADD 8 - (BALL_HEIGHT/2)
                         CP PADDLE_Y
                         RET C
                         ; check if we're above the bottom of the paddle
@@ -60,11 +60,11 @@ CheckPaddleCollide::    LD A, [BallY+1]
                         LD HL, BallY
                         LD A, $FF
                         LD [HLI], A
-                        LD [HL], PADDLE_Y - BALL_HEIGHT - 1
+                        LD [HL], PADDLE_Y - BALL_HEIGHT - (8 - BALL_HEIGHT)/2 - 1
                         RET
 
 CheckTopCollide::   LD A, [BallY+1]
-                    CP 16
+                    CP 16 - (8 - BALL_HEIGHT)/2
                     RET NC
                     ; we collided, so reflect and reposition
                     CALL ReflectBallY
