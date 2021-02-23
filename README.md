@@ -1,8 +1,8 @@
 # Bustfree!
 ### A brick-busting arcade game for the Nintendo Game Boy
 
-![bustfree](https://user-images.githubusercontent.com/246294/108000363-94fc2300-6f9e-11eb-99fd-99c7198e9a40.png)
-
+![logo](https://user-images.githubusercontent.com/246294/108791170-4d900c80-7533-11eb-88d1-89af67fe6294.png)
+![bustfree](https://user-images.githubusercontent.com/246294/108791263-803a0500-7533-11eb-95e3-3e7d7b2cd9cb.png)
 
 *Bustfree!* is a simple brick-busting game in the style of Atari's [Breakout](https://en.wikipedia.org/wiki/Breakout_(video_game)) or Taito's [Arkanoid](https://en.wikipedia.org/wiki/Arkanoid),
 developed for the Nintendo Game Boy using freely available, unofficial tools.
@@ -24,6 +24,7 @@ If you encounter any compatibility issues with your hardware, please file a bug.
 
 ## Release History
 
+* Alpha 3 - February 22, 2021
 * Alpha 2 - February 15, 2021
 * Alpha 1 - February 8, 2021
 
