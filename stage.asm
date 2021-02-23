@@ -1,6 +1,8 @@
 SECTION "StageRAM", WRAM0, ALIGN[8]
-StageMap::      DS 16 * 8
-TotalBricks::   DS 1
+StageMap::          DS 16 * 8
+TotalBricks::       DS 1
+CurrentStage::      DS 1
+CurrentStagePtr:    DS 2
 
 SECTION "Stage", ROM0
 DrawStage:: LD HL, StageMap
@@ -23,13 +25,14 @@ DrawStage:: LD HL, StageMap
             JR NZ, .drawRow
             RET
 
-SECTION "StageData", ROM0
+SECTION "StageData", ROM0, ALIGN[8]
 StageData:
 PUSHC
 CHARMAP ".", 0
 CHARMAP "-", $10
 CHARMAP "_", $01
 CHARMAP "=", $11
+; stage 0
 ;   0123456789ABCDEF
 DB "..====..====..=."
 DB "..====..====..=."
@@ -39,9 +42,33 @@ DB "..====..====..=."
 DB "..====..====..=."
 DB "..====..====..=."
 DB "..====..====..=."
+; stage 1
+;   0123456789ABCDEF
+DB "..=..=..=..=..=."
+DB "..=..=..=..=..=."
+DB "..=..=..=..=..=."
+DB "..=..=..=..=..=."
+DB "..=..=..=..=..=."
+DB "..=..=..=..=..=."
+DB "..=..=..=..=..=."
+DB "..=..=..=..=..=."
 POPC
 
-InitStageMap:   LD HL, StageData
+InitStagePtr:   LD HL, CurrentStagePtr
+                LD A, [CurrentStage]
+                AND 1
+                RRCA
+                LD [HLI], A
+                LD A, [CurrentStage]
+                SRL A
+                ADD HIGH(StageData)
+                LD [HL], A
+                RET
+
+InitStageMap:   LD HL, CurrentStagePtr
+                LD A, [HLI]
+                LD H, [HL]
+                LD L, A
                 LD DE, StageMap
                 LD B, 128
 .loop           LD A, [HLI]
@@ -69,6 +96,8 @@ InitTotalBricks:    LD HL, StageMap
                     LD [TotalBricks], A
                     RET
 
-InitStage:: CALL InitStageMap
+; loads the stage in CurrentStage
+InitStage:: CALL InitStagePtr
+            CALL InitStageMap
             CALL InitTotalBricks
             RET

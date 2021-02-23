@@ -100,6 +100,8 @@ InitGame:   LD A, STARTING_LIVES
             CALL ClearScore
             CALL InitBall
             CALL InitPaddle
+            XOR A
+            LD [CurrentStage], A
             CALL InitStage
             RET
 
