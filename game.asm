@@ -1,6 +1,7 @@
 INCLUDE "game.inc"
 
 WINDOW_Y        EQU 136
+NUM_OF_STAGES   EQU 2
 
 SECTION "GameVars", WRAM0
 NoOfLives::     DS 1
@@ -15,7 +16,7 @@ StartGame:: CALL InitGameVBlank
             CALL LoadFont
             CALL LoadBGGfx
             CALL LoadSpriteGfx
-            CALL InitGame
+            CALL NewGame
             CALL DrawStage
             CALL DrawStatus
             CALL TurnOnScreen
@@ -93,17 +94,32 @@ IncrementScore::    LD HL, Score
                     CALL DrawStatus
                     RET
 
-InitGame:   LD A, STARTING_LIVES
+NewGame:    LD A, STARTING_LIVES
             LD [NoOfLives], A
             XOR A
             LD [BricksBroken], A
-            CALL ClearScore
-            CALL InitBall
-            CALL InitPaddle
-            XOR A
             LD [CurrentStage], A
+            CALL ClearScore
+            CALL InitGame
+            RET
+
+InitGame:   CALL InitBall
+            CALL InitPaddle
             CALL InitStage
             RET
+
+LevelComplete:  LD HL, CurrentStage
+                LD A, [HL]
+                INC A
+                CP NUM_OF_STAGES
+                JP Z, GameOver
+                LD [HL], A
+                CALL WaitForVBlank
+                CALL TurnOffScreen
+                CALL InitGame
+                CALL DrawStage
+                CALL TurnOnScreen
+                RET
 
 GameOver::  CALL WaitForVBlank
             CALL TurnOffScreen
@@ -153,7 +169,7 @@ OnBrickCollide::    CALL ClearBrick
                     LD A, [HL]
                     INC A
                     CP B
-                    JP Z, GameOver
+                    JP Z, LevelComplete
                     LD [HL], A
                     RET
 

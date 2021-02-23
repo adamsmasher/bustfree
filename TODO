@@ -1,5 +1,3 @@
-ALPHA 3
-
 * animations?
   * ball spinning
   * bricks exploding
@@ -12,7 +10,6 @@ ALPHA 3
 * some sort of ending
 * sound + music
 * high score table
-* multiple levels
 * power ups
   + multi-ball
   + laser
