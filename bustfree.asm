@@ -11,6 +11,7 @@ Main:   DI
         CALL InitVBlank
         CALL InitStat
         CALL InitShadowOAM
+        CALL SoundSystem_Init
         EI
         HALT
         CALL TurnOffScreen
@@ -18,7 +19,17 @@ Main:   DI
         CALL InitPalette
         CALL InitInput
         CALL StartTitleScreen
-.loop   CALL RunLoop
+
+        LD BC, BANK(Inst_s11space)
+        LD DE, Inst_s11space
+        CALL Music_PrepareInst
+
+        LD BC, BANK(Music_s11space)
+        LD DE, Music_s11space
+        CALL Music_Play
+
+.loop   CALL SoundSystem_Process
+        CALL RunLoop
         JR .loop
 
 RunLoop:        LD HL, GameLoopPtr
