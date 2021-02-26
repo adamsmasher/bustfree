@@ -35,20 +35,23 @@ CheckRightCollide:: LD A, [BallX+1]
 
 CheckPaddleCollide::    LD A, [BallY+1]
                         ; check if we're below the top of the paddle
-                        ADD 8 - (BALL_HEIGHT/2)
-                        CP PADDLE_Y
+                        CP PADDLE_Y - (8 - BALL_HEIGHT/2)
                         RET C
                         ; check if we're above the bottom of the paddle
-                        CP PADDLE_Y + PADDLE_HEIGHT
+                        CP PADDLE_Y + PADDLE_HEIGHT + BALL_HEIGHT
                         RET NC
                         ; check if we're to the left of the paddle
                         LD A, [BallX+1]
-                        ADD BALL_WIDTH/2
+                        ADD 8 - BALL_WIDTH/2
                         LD B, A
                         LD A, [PaddleX+1]
                         CP B
                         RET NC
                         ; check if we're to the right of the paddle
+                        LD A, [BallX+1]
+                        ADD (8 - BALL_WIDTH)/2
+                        LD B, A
+                        LD A, [PaddleX+1]
                         ADD PADDLE_WIDTH
                         CP B
                         RET C
