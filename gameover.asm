@@ -4,14 +4,14 @@ INCLUDE "input.inc"
 SECTION "GameOverVars", WRAM0
 GameOverTimer:  DS 1
 
-SECTION "GameOverTxt", ROM0
+SECTION "GameOverTxt", ROMX
 PUSHC
 SETCHARMAP Font
 GameOverTxt:    DB "GAME OVER"
 .end
 POPC
 
-DrawGameOver:   LD HL, GameOverTxt
+_DrawGameOver:  LD HL, GameOverTxt
                 LD DE, $9906
                 LD B, GameOverTxt.end - GameOverTxt
 .draw           LD A, [HLI]
@@ -20,6 +20,10 @@ DrawGameOver:   LD HL, GameOverTxt
                 DEC B
                 JR NZ, .draw
                 RET
+
+DrawGameOver:   LD A, BANK(_DrawGameOver)
+                LD [$2000], A
+                JP _DrawGameOver
 
 SECTION "GameOver", ROM0
 

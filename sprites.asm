@@ -1,4 +1,4 @@
-SECTION "SpriteData", ROM0
+SECTION "SpriteData", ROMX
 BallTileData:
 DW `00000000
 DW `00000000
@@ -29,7 +29,7 @@ DW `00000000
 DW `00000000
 PaddleTileDataEnd:
 
-LoadSpriteGfx:: LD HL, PaddleTileData
+_LoadSpriteGfx: LD HL, PaddleTileData
                 LD DE, $8000
                 LD B, PaddleTileDataEnd - PaddleTileData
 .loop1          LD A, [HLI]
@@ -46,3 +46,9 @@ LoadSpriteGfx:: LD HL, PaddleTileData
                 DEC B
                 JR NZ, .loop2
                 RET
+
+SECTION "LoadSpriteGfx", ROM0
+
+LoadSpriteGfx:: LD A, BANK(_LoadSpriteGfx)
+                LD [$2000], A
+                JP _LoadSpriteGfx

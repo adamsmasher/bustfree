@@ -43,7 +43,7 @@ TitleScreenPalette:     DS 1
 PressStartPalette:      DS 1
 Delay:                  DS 1
 
-SECTION "TitleScreenData", ROM0
+SECTION "TitleScreenData", ROMX
 PUSHC
 SETCHARMAP Font
 PressStartTxt:  DB "PRESS START"
@@ -59,15 +59,15 @@ FreeLogo:   INCBIN "free.gfx"
 KatakanaLogo:   INCBIN "basutofurii.gfx"
 .end
 
-DrawPressStart: LD HL, PressStartTxt
-                LD DE, PRESS_START_POS
-                LD B, PressStartTxt.end - PressStartTxt
-.loop           LD A, [HLI]
-                LD [DE], A
-                INC E
-                DEC B
-                JR NZ, .loop
-                RET
+_DrawPressStart:    LD HL, PressStartTxt
+                    LD DE, PRESS_START_POS
+                    LD B, PressStartTxt.end - PressStartTxt
+.loop               LD A, [HLI]
+                    LD [DE], A
+                    INC E
+                    DEC B
+                    JR NZ, .loop
+                    RET
 
 LoadBustLogo:   LD HL, BustLogo
                 LD DE, BUST_FIRST_TILE_ADDR
@@ -103,7 +103,7 @@ LoadKatakanaLogo:   LD HL, KatakanaLogo
                     JR NZ, .loop
                     RET
 
-LoadTitleGfx:   CALL LoadFont
+_LoadTitleGfx:  CALL LoadFont
                 CALL LoadBustLogo
                 CALL LoadFreeLogo
                 CALL LoadKatakanaLogo
@@ -119,6 +119,14 @@ FREE_HEIGHT EQU 5
 
 KATAKANA_WIDTH  EQU 6
 KATAKANA_HEIGHT EQU 2
+
+DrawPressStart: LD A, BANK(_DrawPressStart)
+                LD [$2000], A
+                JP _DrawPressStart
+
+LoadTitleGfx:   LD A, BANK(_LoadTitleGfx)
+                LD [$2000], A
+                JP _LoadTitleGfx
 
 DrawBustLogo:   LD HL, BUST_POS
                 LD A, BUST_FIRST_TILE

@@ -1,9 +1,9 @@
-SECTION "FontGfx", ROM0
+SECTION "FontGfx", ROMX
 
 FontGfx:    INCBIN "font.gfx"
 .end
 
-LoadFont::  LD DE, $8800
+_LoadFont:  LD DE, $8800
             LD HL, FontGfx
             LD BC, FontGfx.end - FontGfx
 .loop       LD A, [HLI]
@@ -15,3 +15,8 @@ LoadFont::  LD DE, $8800
             JR NZ, .loop
             RET
 
+SECTION "LoadFont", ROM0
+
+LoadFont::  LD A, BANK(_LoadFont)
+            LD [$2000], A
+            JP _LoadFont
