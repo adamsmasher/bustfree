@@ -1,8 +1,9 @@
 # Bustfree!
 ### A brick-busting arcade game for the Nintendo Game Boy
 
-![logo](https://user-images.githubusercontent.com/246294/108791170-4d900c80-7533-11eb-88d1-89af67fe6294.png)
-![bustfree](https://user-images.githubusercontent.com/246294/108791263-803a0500-7533-11eb-95e3-3e7d7b2cd9cb.png)
+![biglogo](https://user-images.githubusercontent.com/246294/109725871-9f094e80-7b66-11eb-869d-a4e4547e348d.png)
+
+![screenshot](https://user-images.githubusercontent.com/246294/109725777-813be980-7b66-11eb-8c4e-1d3cc05fb26f.png)
 
 *Bustfree!* is a simple brick-busting game in the style of Atari's [Breakout](https://en.wikipedia.org/wiki/Breakout_(video_game)) or Taito's [Arkanoid](https://en.wikipedia.org/wiki/Arkanoid),
 developed for the Nintendo Game Boy using freely available, unofficial tools.
@@ -24,6 +25,7 @@ If you encounter any compatibility issues with your hardware, please file a bug.
 
 ## Release History
 
+* Alpha 4 - March 2, 2021
 * Alpha 3 - February 22, 2021
 * Alpha 2 - February 15, 2021
 * Alpha 1 - February 8, 2021
@@ -43,5 +45,7 @@ For more information about homebrew Game Boy development, check out [gbdev.io](h
 The [Pan Docs](https://gbdev.io/pandocs/) are my primary technical reference for the Game Boy hardware. Much thanks to all those who have written, contributed to, and hosted them.
 
 As the primary tools I use, I'd like to extend my thanks to [beware](https://www.bircd.org/), developer of BGB and to the developers of RGBDS ([history](https://rgbds.gbdev.io/docs/v0.4.2/rgbds.7), [current contributors on github](https://github.com/gbdev/rgbds/graphs/contributors)).
+
+Bust Free! uses the [GBSoundSystem](https://github.com/BlitterObjectBob/GBSoundSystem/) audio driver.
 
 Much thanks to Nintendo for making the Game Boy, and to [Gunpei Yokoi](https://en.wikipedia.org/wiki/Gunpei_Yokoi) in particular for dreaming of it.
