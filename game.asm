@@ -161,7 +161,7 @@ ClearBrick:   ; compute destination and put in DE
               INC [HL]
               RET
 
-OnBrickCollide::    CALL ClearBrick
+OnBrickDestroyed::  CALL ClearBrick
                     CALL IncrementScore
                     LD A, [TotalBricks]
                     LD B, A

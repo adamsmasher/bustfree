@@ -18,7 +18,9 @@
   + laser
   + ball breaks through bricks without bouncing
 * enemies
-* indestructable bricks
+* some kind of ball/brick collision rethink?
+  * use a function table for collision?
+  * be a lil more precise about the whole 8x4 thing
 * bricks that take multiple hits to destroy
 * super game boy support
 * borders/background

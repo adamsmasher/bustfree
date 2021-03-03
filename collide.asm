@@ -4,6 +4,7 @@ INCLUDE "paddle.inc"
 SECTION "CollideRAM", WRAM0
 UpdateTile::    DS 1
 Collided:       DS 1
+DestroyedBrick: DS 1
 
 SECTION "Collide", ROM0
 
@@ -112,24 +113,44 @@ CheckStageCollide:  LD H, HIGH(StageMap)
 CheckStageCollide8x4Top:    LD A, [HL]
                             AND $F0
                             RET Z
+                            LD A, 1
+                            LD [Collided], A
+                            XOR A
+                            LD [DestroyedBrick], A
+                            ; check to see if brick is indestructable
+                            LD A, [HL]
+                            AND $F0
+                            CP $20
+                            RET Z
+                            ; destroy brick
+                            LD A, 1
+                            LD [DestroyedBrick], A
                             LD A, [HL]
                             AND $0F
                             LD [HL], A
                             LD [UpdateTile], A
-                            LD A, 1
-                            LD [Collided], A
                             RET
 
 ; HL - contains pointer to tile collided with
 CheckStageCollide8x4Bottom: LD A, [HL]
                             AND $0F
                             RET Z
+                            XOR A
+                            LD [DestroyedBrick], A
+                            LD A, 1
+                            LD [Collided], A
+                            ; check to see if brick is indestructable
+                            LD A, [HL]
+                            AND $0F
+                            CP $02
+                            RET Z
+                            ; destroy brick
+                            LD A, 1
+                            LD [DestroyedBrick], A
                             LD A, [HL]
                             AND $F0
                             LD [HL], A
                             LD [UpdateTile], A
-                            LD A, 1
-                            LD [Collided], A
                             RET
 
 CheckStageCollide8x4:   XOR A
@@ -159,7 +180,9 @@ CheckStageCollideX::    CALL CheckBallInBounds
                         LD A, [Collided]
                         AND A
                         RET Z
-                        CALL OnBrickCollide
+                        LD A, [DestroyedBrick]
+                        AND A
+                        CALL NZ, OnBrickDestroyed
                         CALL SpeedUpBall
                         CALL ReflectBallX
                         CALL ApplyBallVelocityX
@@ -173,7 +196,9 @@ CheckStageCollideY::    CALL CheckBallInBounds
                         LD A, [Collided]
                         AND A
                         RET Z
-                        CALL OnBrickCollide
+                        LD A, [DestroyedBrick]
+                        AND A
+                        CALL NZ, OnBrickDestroyed
                         CALL SpeedUpBall
                         CALL ReflectBallY
                         CALL ApplyBallVelocityY
