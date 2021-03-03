@@ -18,9 +18,8 @@
   + laser
   + ball breaks through bricks without bouncing
 * enemies
-* some kind of ball/brick collision rethink?
-  * use a function table for collision?
-  * be a lil more precise about the whole 8x4 thing
+* write a conversion script to autogenerate tiles for all combinations of bricks
+* still some issues with imprecision with brick/ball collision detection?
 * bricks that take multiple hits to destroy
 * super game boy support
 * borders/background

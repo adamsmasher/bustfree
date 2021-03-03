@@ -2,9 +2,8 @@ include "ball.inc"
 INCLUDE "paddle.inc"
 
 SECTION "CollideRAM", WRAM0
-UpdateTile::    DS 1
-Collided:       DS 1
-DestroyedBrick: DS 1
+CollisionTile:      DS 1
+CollisionHandlers:  DS 2
 
 SECTION "Collide", ROM0
 
@@ -92,9 +91,7 @@ CheckBottomCollide::    LD A, [BallY+1]
                         CALL DrawStatus
                         RET
 
-; NZ if a collision occurred
-; HL will contain ptr to stage map data
-CheckStageCollide:  LD H, HIGH(StageMap)
+GetCollisionTile:   LD H, HIGH(StageMap)
                     LD A, [BallRow]
                     ; convert from row to row address
                     SWAP A
@@ -105,56 +102,77 @@ CheckStageCollide:  LD H, HIGH(StageMap)
                     LD L, A
                     ; get tile
                     LD A, [HL]
-                    ; check if the tile is solid
-                    AND A
+                    LD [CollisionTile], A
                     RET
 
-; HL - contains pointer to tile collided with
-CheckStageCollide8x4Top:    LD A, [HL]
-                            AND $F0
-                            RET Z
-                            LD A, 1
-                            LD [Collided], A
-                            XOR A
-                            LD [DestroyedBrick], A
-                            ; check to see if brick is indestructable
-                            LD A, [HL]
-                            AND $F0
-                            CP $20
-                            RET Z
-                            ; destroy brick
-                            LD A, 1
-                            LD [DestroyedBrick], A
-                            LD A, [HL]
-                            AND $0F
-                            LD [HL], A
-                            LD [UpdateTile], A
-                            RET
+BounceY:    CALL ReflectBallY
+            CALL ApplyBallVelocityY
+            RET
 
-; HL - contains pointer to tile collided with
-CheckStageCollide8x4Bottom: LD A, [HL]
-                            AND $0F
-                            RET Z
-                            XOR A
-                            LD [DestroyedBrick], A
-                            LD A, 1
-                            LD [Collided], A
-                            ; check to see if brick is indestructable
+BounceX:    CALL ReflectBallX
+            CALL ApplyBallVelocityX
+            RET
+
+DoNothing:  RET
+
+NormalBrickHandler: CALL ClearBrickAtBall
+                    CALL OnBrickDestroyed
+                    CALL SpeedUpBall
+                    RET
+
+NormalBrickHandlerY: CALL NormalBrickHandler
+                     CALL BounceY
+                     RET
+
+NormalBrickHandlerX: CALL NormalBrickHandler
+                     CALL BounceX
+                     RET
+
+IndestructableBrickHandlerY: CALL SpeedUpBall
+                             CALL BounceY
+                             RET
+
+IndestructableBrickHandlerX: CALL SpeedUpBall
+                             CALL BounceX
+                             RET
+
+CollisionHandlersX: DW DoNothing
+                    DW NormalBrickHandlerX
+                    DW IndestructableBrickHandlerX
+
+CollisionHandlersY: DW DoNothing
+                    DW NormalBrickHandlerY
+                    DW IndestructableBrickHandlerY
+
+CheckStageCollide8x4Bottom: LD HL, CollisionTile
                             LD A, [HL]
                             AND $0F
-                            CP $02
-                            RET Z
-                            ; destroy brick
-                            LD A, 1
-                            LD [DestroyedBrick], A
+                            ADD A
+                            LD [HL], A
+                            JP InvokeCollisionHandler
+
+CheckStageCollide8x4Top:    LD HL, CollisionTile
                             LD A, [HL]
                             AND $F0
+                            SWAP A
+                            ADD A
                             LD [HL], A
-                            LD [UpdateTile], A
-                            RET
+                            JP InvokeCollisionHandler
 
-CheckStageCollide8x4:   XOR A
-                        LD [Collided], A
+; A - contains the tile no for the collision
+InvokeCollisionHandler:     LD HL, CollisionHandlers
+                            LD A, [HLI]
+                            LD H, [HL]
+                            LD L, A
+                            LD A, [CollisionTile]
+                            ADD L
+                            LD L, A
+                            LD A, [HLI]
+                            LD H, [HL]
+                            LD L, A
+                            JP HL
+
+CheckStageCollide8x4:   CALL GetCollisionTile
                         LD A, [BallY+1]
                         ADD BALL_HEIGHT/2
                         AND %00000100
@@ -173,33 +191,18 @@ CheckBallInBounds:  LD A, [BallRow]
 
 CheckStageCollideX::    CALL CheckBallInBounds
                         RET NC
-                        CALL CheckStageCollide
-                        RET Z
+                        LD HL, CollisionHandlers
+                        LD A, LOW(CollisionHandlersX)
+                        LD [HLI], A
+                        LD [HL], HIGH(CollisionHandlersX)
                         CALL CheckStageCollide8x4
-                        LD HL, Collided
-                        LD A, [Collided]
-                        AND A
-                        RET Z
-                        LD A, [DestroyedBrick]
-                        AND A
-                        CALL NZ, OnBrickDestroyed
-                        CALL SpeedUpBall
-                        CALL ReflectBallX
-                        CALL ApplyBallVelocityX
                         RET
 
 CheckStageCollideY::    CALL CheckBallInBounds
                         RET NC
-                        CALL CheckStageCollide
-                        RET Z
+                        LD HL, CollisionHandlers
+                        LD A, LOW(CollisionHandlersY)
+                        LD [HLI], A
+                        LD [HL], HIGH(CollisionHandlersY)
                         CALL CheckStageCollide8x4
-                        LD A, [Collided]
-                        AND A
-                        RET Z
-                        LD A, [DestroyedBrick]
-                        AND A
-                        CALL NZ, OnBrickDestroyed
-                        CALL SpeedUpBall
-                        CALL ReflectBallY
-                        CALL ApplyBallVelocityY
                         RET

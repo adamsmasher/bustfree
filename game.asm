@@ -1,3 +1,4 @@
+include "ball.inc"
 INCLUDE "game.inc"
 
 WINDOW_Y        EQU 136
@@ -7,6 +8,8 @@ SECTION "GameVars", WRAM0
 NoOfLives::     DS 1
 BricksBroken::  DS 1
 Score::         DS SCORE_BYTES
+TileAtBall:     DS 1
+ClearedTile:    DS 1
 
 SECTION "Game", ROM0
 
@@ -128,41 +131,79 @@ GameOver::  CALL WaitForVBlank
             CALL StartGameOver
             RET
 
-ClearBrick:   ; compute destination and put in DE
-              LD D, $98
-              LD A, [BallRow]
-              ADD 2
-              SWAP A
-              SLA A
-              LD E, A
-              JR NC, .nc
-              INC D
-.nc           LD A, [BallCol]
-              ADD 2
-              ADD E
-              LD E, A
-              ; get pointer to next free update slot
-              LD A, [VRAMUpdateLen]
-              SLA A
-              SLA A
-              ADD LOW(VRAMUpdates)
-              LD L, A
-              LD H, HIGH(VRAMUpdates)
-              ; write destination
-              LD A, E
-              LD [HLI], A
-              LD A, D
-              LD [HLI], A
-              ; write tile to write
-              LD A, [UpdateTile]
-              LD [HLI], A
-              ; increment number of used slots
-              LD HL, VRAMUpdateLen
-              INC [HL]
-              RET
+SetupClearBrickTransfer:    ; compute destination and put in DE
+                            LD D, $98
+                            LD A, [BallRow]
+                            ADD 2
+                            SWAP A
+                            SLA A
+                            LD E, A
+                            JR NC, .nc
+                            INC D
+.nc                         LD A, [BallCol]
+                            ADD 2
+                            ADD E
+                            LD E, A
+                            ; get pointer to next free update slot
+                            LD A, [VRAMUpdateLen]
+                            SLA A
+                            SLA A
+                            ADD LOW(VRAMUpdates)
+                            LD L, A
+                            LD H, HIGH(VRAMUpdates)
+                            ; write destination
+                            LD A, E
+                            LD [HLI], A
+                            LD A, D
+                            LD [HLI], A
+                            ; write tile to write
+                            LD A, [ClearedTile]
+                            LD [HLI], A
+                            ; increment number of used slots
+                            LD HL, VRAMUpdateLen
+                            INC [HL]
+                            RET
 
-OnBrickDestroyed::  CALL ClearBrick
-                    CALL IncrementScore
+; returns address in HL
+GetBallMapAddr: LD H, HIGH(StageMap)
+                LD A, [BallRow]
+                ; convert from row to row address
+                SWAP A
+                LD L, A
+                LD A, [BallCol]
+                ; add to row address to get tile pointer 
+                ADD L
+                LD L, A
+                RET
+
+GetTileAtBall:  CALL GetBallMapAddr
+                LD A, [HL]
+                LD [TileAtBall], A
+                RET
+
+GetClearedTile: LD A, [BallY+1]
+                ADD BALL_HEIGHT/2
+                AND %00000100
+                LD A, [TileAtBall]
+                JR Z, .top
+                AND $F0
+                JR .done
+.top            AND $0F
+.done           LD [ClearedTile], A
+                RET
+
+ClearBrickAtBall::  CALL GetTileAtBall
+                    CALL GetClearedTile
+                    CALL SetupClearBrickTransfer
+                    CALL ClearBrickFromStageMap
+                    RET
+
+ClearBrickFromStageMap: CALL GetBallMapAddr
+                        LD A, [ClearedTile]
+                        LD [HL], A
+                        RET
+
+OnBrickDestroyed::  CALL IncrementScore
                     LD A, [TotalBricks]
                     LD B, A
                     LD HL, BricksBroken

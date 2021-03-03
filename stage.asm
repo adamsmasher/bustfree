@@ -37,6 +37,7 @@ InitStagePtr:   LD HL, CurrentStagePtr
                 RET
 
 
+; FIXME: ignore indestructable bricks
 InitTotalBricks:    LD HL, StageMap
                     LD B, 128
                     LD C, 0
