@@ -36,19 +36,19 @@ InitStagePtr:   LD HL, CurrentStagePtr
                 LD [HL], A
                 RET
 
-
-; FIXME: ignore indestructable bricks
 InitTotalBricks:    LD HL, StageMap
                     LD B, 128
                     LD C, 0
 .loop               LD A, [HL]
                     ; check bottom brick
                     AND $0F
-                    JR Z, .top
+                    CP $01
+                    JR NZ, .top
                     INC C
 .top                LD A, [HLI]
                     AND $F0
-                    JR Z, .z
+                    CP $10
+                    JR NZ, .z
                     INC C
 .z                  DEC B
                     JR NZ, .loop
