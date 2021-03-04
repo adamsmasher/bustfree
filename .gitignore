@@ -6,3 +6,4 @@
 *.exe
 *.map
 *.sym
+__pycache__

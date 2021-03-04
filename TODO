@@ -18,7 +18,6 @@
   + laser
   + ball breaks through bricks without bouncing
 * enemies
-* write a conversion script to autogenerate tiles for all combinations of bricks
 * still some issues with imprecision with brick/ball collision detection?
 * bricks that take multiple hits to destroy
 * super game boy support
