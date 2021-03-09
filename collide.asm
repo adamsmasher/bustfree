@@ -4,6 +4,7 @@ INCLUDE "paddle.inc"
 SECTION "CollideRAM", WRAM0
 CollisionTile:      DS 1
 CollisionHandlers:  DS 2
+EnemyCollisionFlag: DS 1
 
 SECTION "Collide", ROM0
 
@@ -192,6 +193,7 @@ InvokeCollisionHandler:     LD HL, CollisionHandlers
 
 CheckStageCollide8x4:   CALL GetCollisionTile
                         LD A, [BallY+1]
+                        ; TODO: FIX ME - and in game.asm
                         ADD BALL_HEIGHT/2
                         AND %00000100
                         JP NZ, CheckStageCollide8x4Bottom
@@ -223,4 +225,57 @@ CheckStageCollideY::    CALL CheckBallInBounds
                         LD [HLI], A
                         LD [HL], HIGH(CollisionHandlersY)
                         CALL CheckStageCollide8x4
+                        RET
+
+ENEMY_HEIGHT    EQU 8
+ENEMY_WIDTH     EQU 8
+
+CheckEnemyCollide:  XOR A
+                    LD [EnemyCollisionFlag], A
+                    ; check left bound
+                    LD A, [BallX+1]
+                    ; TODO: use a constant
+                    ADD 4   
+                    LD B, A
+                    LD A, [EnemyX]
+                    CP B
+                    RET NC
+                    ; check right bound
+                    ADD ENEMY_WIDTH
+                    CP B
+                    RET C
+                    ; check top bound
+                    LD A, [BallY+1]
+                    ; TODO: use a constant
+                    ADD 4
+                    LD B, A
+                    LD A, [EnemyY]
+                    CP B
+                    RET NC
+                    ; check bottom bound
+                    ADD ENEMY_HEIGHT
+                    CP B
+                    RET C
+                    LD A, 1
+                    LD [EnemyCollisionFlag], A
+                    RET
+
+CheckEnemyCollideX::    CALL CheckEnemyCollide
+                        LD A, [EnemyCollisionFlag]
+                        AND A
+                        RET Z
+                        ; we collided, so reflect and reposition
+                        CALL ReflectBallX
+                        CALL SpeedUpBall
+                        ; TODO: destroy enemy
+                        RET
+
+CheckEnemyCollideY::    CALL CheckEnemyCollide
+                        LD A, [EnemyCollisionFlag]
+                        AND A
+                        RET Z
+                        ; we collided, so reflect and reposition
+                        CALL ReflectBallY
+                        CALL SpeedUpBall
+                        ; TODO: destroy enemy
                         RET

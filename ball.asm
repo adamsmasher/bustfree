@@ -120,6 +120,7 @@ UpdateBallX:    CALL ApplyBallVelocityX
                 CALL CheckLeftCollide
                 CALL CheckRightCollide
                 CALL CheckStageCollideX
+                CALL CheckEnemyCollideX
                 RET
 
 AddBallSpin::   LD HL, PaddleVelocityX
@@ -161,6 +162,7 @@ UpdateBallY:    CALL ApplyBallVelocityY
                 CALL CheckTopCollide
                 CALL CheckBottomCollide
                 CALL CheckStageCollideY
+                CALL CheckEnemyCollideY
                 RET
 
 UpdateBall::    LD A, [BallState]

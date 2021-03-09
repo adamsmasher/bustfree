@@ -11,6 +11,10 @@ Score::             DS SCORE_BYTES
 TileAtBall:         DS 1
 ReplacementTile:    DS 1
 ReplacementBrick::  DS 1
+EnemyX::            DS 1
+EnemyY::            DS 1
+EnemyVelocityX:     DS 1
+EnemyVelocityY:     DS 1
 
 SECTION "Game", ROM0
 
@@ -28,6 +32,15 @@ StartGame:: CALL InitGameVBlank
             LD A, LOW(Game)
             LD [HLI], A
             LD [HL], HIGH(Game)
+            RET
+
+InitEnemy:  LD A, 100
+            LD [EnemyX], A
+            LD [EnemyY], A
+            LD A, 1
+            LD [EnemyVelocityX], A
+            XOR A
+            LD [EnemyVelocityY], A
             RET
 
 SetupWindowInterrupt:   ; fire interrupt on LYC=LY coincidence
@@ -50,9 +63,31 @@ Game:   CALL WaitForVBlank
         CALL UpdateInput
         CALL UpdateBall
         CALL UpdatePaddle
+        CALL UpdateEnemy
         CALL SetupBallOAM
         CALL SetupPaddleOAM
+        CALL SetupEnemyOAM
         RET
+
+UpdateEnemy:    LD HL, EnemyX
+                LD A, [EnemyVelocityX]
+                ADD [HL]
+                LD [HL], A
+                LD HL, EnemyY
+                LD A, [EnemyVelocityY]
+                ADD [HL]
+                LD [HL], A
+                RET
+
+ENEMY_TILE      EQU 2
+
+SetupEnemyOAM:  LD HL, ShadowOAM+4*4
+                LD A, [EnemyY]
+                LD [HLI], A
+                LD A, [EnemyX]
+                LD [HLI], A
+                LD [HL], ENEMY_TILE
+                RET
 
 TurnOnScreen:   ; enable display
                 ; BG tiles at $8800
@@ -110,6 +145,7 @@ NewGame:    LD A, STARTING_LIVES
 InitGame:   CALL InitBall
             CALL InitPaddle
             CALL InitStage
+            CALL InitEnemy
             RET
 
 LevelComplete:  LD HL, CurrentStage
