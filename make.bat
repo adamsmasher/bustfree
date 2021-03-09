@@ -1,3 +1,5 @@
+python make_tileset.py tileset.png complete.png
+rgbgfx complete.png -o all_bricks.bin
 rgbasm -o ball.o ball.asm
 rgbasm -o bustfree.o bustfree.asm
 rgbasm -o collide.o collide.asm

@@ -1,6 +1,6 @@
 SECTION "BGTileData", ROMX
 BGTileData:
-INCBIN "all_tiles.bin"
+INCBIN "all_bricks.bin"
 .end
 
 _LoadBGGfx: LD HL, BGTileData
