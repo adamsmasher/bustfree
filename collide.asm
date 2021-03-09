@@ -234,7 +234,7 @@ CheckEnemyCollide:  XOR A
                     LD [EnemyCollisionFlag], A
                     ; check left bound
                     LD A, [BallX+1]
-                    ; TODO: use a constant
+                    ; get center of ball
                     ADD 4   
                     LD B, A
                     LD A, [EnemyX]
@@ -246,7 +246,7 @@ CheckEnemyCollide:  XOR A
                     RET C
                     ; check top bound
                     LD A, [BallY+1]
-                    ; TODO: use a constant
+                    ; get center of ball
                     ADD 4
                     LD B, A
                     LD A, [EnemyY]
