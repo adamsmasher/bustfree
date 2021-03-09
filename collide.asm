@@ -277,5 +277,6 @@ CheckEnemyCollideY::    CALL CheckEnemyCollide
                         ; we collided, so reflect and reposition
                         CALL ReflectBallY
                         CALL SpeedUpBall
-                        ; TODO: destroy enemy
+                        CALL DestroyEnemy
+                        ; TODO: give points for destroying the enemy
                         RET

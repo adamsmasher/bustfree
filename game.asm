@@ -43,6 +43,17 @@ InitEnemy:  LD A, 100
             LD [EnemyVelocityY], A
             RET
 
+DestroyEnemy::  ; position enemy off screen
+                LD A, 200
+                LD [EnemyX], A
+                LD [EnemyY], A
+                ; stop enemy movement
+                XOR A
+                LD [EnemyVelocityX], A
+                LD [EnemyVelocityY], A
+                ; TODO: some kind of animation
+                RET
+
 SetupWindowInterrupt:   ; fire interrupt on LYC=LY coincidence
                         LD A, %01000000
                         LDH [$41], A
