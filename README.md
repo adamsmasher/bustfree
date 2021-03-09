@@ -25,6 +25,7 @@ If you encounter any compatibility issues with your hardware, please file a bug.
 
 ## Release History
 
+* Alpha 5 - March 9, 2021
 * Alpha 4 - March 2, 2021
 * Alpha 3 - February 22, 2021
 * Alpha 2 - February 15, 2021
@@ -46,6 +47,6 @@ The [Pan Docs](https://gbdev.io/pandocs/) are my primary technical reference for
 
 As the primary tools I use, I'd like to extend my thanks to [beware](https://www.bircd.org/), developer of BGB and to the developers of RGBDS ([history](https://rgbds.gbdev.io/docs/v0.4.2/rgbds.7), [current contributors on github](https://github.com/gbdev/rgbds/graphs/contributors)).
 
-Bust Free! uses the [GBSoundSystem](https://github.com/BlitterObjectBob/GBSoundSystem/) audio driver.
+Bust Free! uses the [GBSoundSystem](https://github.com/BlitterObjectBob/GBSoundSystem/) audio driver. The [Tiled](https://www.mapeditor.org/) map editor is used to build levels. Some utility scripts are written in the [Python](https://www.python.org/) programming language.
 
 Much thanks to Nintendo for making the Game Boy, and to [Gunpei Yokoi](https://en.wikipedia.org/wiki/Gunpei_Yokoi) in particular for dreaming of it.
