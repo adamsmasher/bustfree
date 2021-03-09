@@ -36,21 +36,32 @@ InitStagePtr:   LD HL, CurrentStagePtr
                 LD [HL], A
                 RET
 
+TotalBrickTbl:  DB 0, 1, 0, 1
+
 InitTotalBricks:    LD HL, StageMap
                     LD B, 128
                     LD C, 0
 .loop               LD A, [HL]
                     ; check bottom brick
                     AND $0F
-                    CP $01
-                    JR NZ, .top
-                    INC C
-.top                LD A, [HLI]
+                    LD DE, TotalBrickTbl
+                    ADD E
+                    LD E, A
+                    LD A, [DE]
+                    ADD C
+                    LD C, A
+                    ; check top brick
+                    LD A, [HLI]
                     AND $F0
-                    CP $10
-                    JR NZ, .z
-                    INC C
-.z                  DEC B
+                    SWAP A
+                    LD DE, TotalBrickTbl
+                    ADD E
+                    LD E, A
+                    LD A, [DE]
+                    ADD C
+                    LD C, A
+                    ; loop coda
+                    DEC B
                     JR NZ, .loop
                     LD A, C
                     LD [TotalBricks], A

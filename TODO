@@ -18,6 +18,5 @@
   + ball breaks through bricks without bouncing
 * enemies
 * still some issues with imprecision with brick/ball collision detection?
-* bricks that take multiple hits to destroy
 * super game boy support
 * borders/background

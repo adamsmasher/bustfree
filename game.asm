@@ -5,11 +5,12 @@ WINDOW_Y        EQU 136
 NUM_OF_STAGES   EQU 2
 
 SECTION "GameVars", WRAM0
-NoOfLives::     DS 1
-BricksBroken::  DS 1
-Score::         DS SCORE_BYTES
-TileAtBall:     DS 1
-ClearedTile:    DS 1
+NoOfLives::         DS 1
+BricksBroken::      DS 1
+Score::             DS SCORE_BYTES
+TileAtBall:         DS 1
+ReplacementTile:    DS 1
+ReplacementBrick::  DS 1
 
 SECTION "Game", ROM0
 
@@ -131,7 +132,7 @@ GameOver::  CALL WaitForVBlank
             CALL StartGameOver
             RET
 
-SetupClearBrickTransfer:    ; compute destination and put in DE
+SetupReplaceBrickTransfer:  ; compute destination and put in DE
                             LD D, $98
                             LD A, [BallRow]
                             ADD 2
@@ -157,7 +158,7 @@ SetupClearBrickTransfer:    ; compute destination and put in DE
                             LD A, D
                             LD [HLI], A
                             ; write tile to write
-                            LD A, [ClearedTile]
+                            LD A, [ReplacementTile]
                             LD [HLI], A
                             ; increment number of used slots
                             LD HL, VRAMUpdateLen
@@ -181,25 +182,31 @@ GetTileAtBall:  CALL GetBallMapAddr
                 LD [TileAtBall], A
                 RET
 
-GetClearedTile: LD A, [BallY+1]
-                ADD BALL_HEIGHT/2
-                AND %00000100
-                LD A, [TileAtBall]
-                JR Z, .top
-                AND $F0
-                JR .done
-.top            AND $0F
-.done           LD [ClearedTile], A
-                RET
-
-ClearBrickAtBall::  CALL GetTileAtBall
-                    CALL GetClearedTile
-                    CALL SetupClearBrickTransfer
-                    CALL ClearBrickFromStageMap
+GetReplacementTile: LD A, [BallY+1]
+                    ADD BALL_HEIGHT/2
+                    AND %00000100
+                    LD A, [TileAtBall]
+                    JR Z, .top
+.bottom             AND $F0
+                    LD B, A
+                    LD A, [ReplacementBrick]
+                    JR .done
+.top                AND $0F
+                    LD B, A
+                    LD A, [ReplacementBrick]
+                    SWAP A
+.done               OR B
+                    LD [ReplacementTile], A
                     RET
 
-ClearBrickFromStageMap: CALL GetBallMapAddr
-                        LD A, [ClearedTile]
+ReplaceBrickAtBall::    CALL GetTileAtBall
+                        CALL GetReplacementTile
+                        CALL SetupReplaceBrickTransfer
+                        CALL ReplaceBrickOnStageMap
+                        RET
+
+ReplaceBrickOnStageMap: CALL GetBallMapAddr
+                        LD A, [ReplacementTile]
                         LD [HL], A
                         RET
 

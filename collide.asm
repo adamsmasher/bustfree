@@ -115,18 +115,34 @@ BounceX:    CALL ReflectBallX
 
 DoNothing:  RET
 
-NormalBrickHandler: CALL ClearBrickAtBall
+NormalBrickHandler: XOR A
+                    LD [ReplacementBrick], A
+                    CALL ReplaceBrickAtBall
                     CALL OnBrickDestroyed
                     CALL SpeedUpBall
                     RET
 
-NormalBrickHandlerY: CALL NormalBrickHandler
-                     CALL BounceY
-                     RET
+NormalBrickHandlerY:    CALL NormalBrickHandler
+                        CALL BounceY
+                        RET
 
-NormalBrickHandlerX: CALL NormalBrickHandler
-                     CALL BounceX
-                     RET
+NormalBrickHandlerX:    CALL NormalBrickHandler
+                        CALL BounceX
+                        RET
+
+DoubleBrickHandler: LD A, 1
+                    LD [ReplacementBrick], A
+                    CALL ReplaceBrickAtBall
+                    CALL SpeedUpBall
+                    RET
+
+DoubleBrickHandlerY:    CALL DoubleBrickHandler
+                        CALL BounceY
+                        RET
+
+DoubleBrickHandlerX:    CALL DoubleBrickHandler
+                        CALL BounceX
+                        RET
 
 IndestructableBrickHandlerY: CALL SpeedUpBall
                              CALL BounceY
@@ -139,10 +155,12 @@ IndestructableBrickHandlerX: CALL SpeedUpBall
 CollisionHandlersX: DW DoNothing
                     DW NormalBrickHandlerX
                     DW IndestructableBrickHandlerX
+                    DW DoubleBrickHandlerX
 
 CollisionHandlersY: DW DoNothing
                     DW NormalBrickHandlerY
                     DW IndestructableBrickHandlerY
+                    DW DoubleBrickHandlerY
 
 CheckStageCollide8x4Bottom: LD HL, CollisionTile
                             LD A, [HL]
