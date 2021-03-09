@@ -219,7 +219,8 @@ GetTileAtBall:  CALL GetBallMapAddr
                 RET
 
 GetReplacementTile: LD A, [BallY+1]
-                    ADD BALL_HEIGHT/2
+                    ; get center of ball
+                    ADD 4
                     AND %00000100
                     LD A, [TileAtBall]
                     JR Z, .top

@@ -193,8 +193,8 @@ InvokeCollisionHandler:     LD HL, CollisionHandlers
 
 CheckStageCollide8x4:   CALL GetCollisionTile
                         LD A, [BallY+1]
-                        ; TODO: FIX ME - and in game.asm
-                        ADD BALL_HEIGHT/2
+                        ; get center of ball
+                        ADD 4
                         AND %00000100
                         JP NZ, CheckStageCollide8x4Bottom
                         JP CheckStageCollide8x4Top
