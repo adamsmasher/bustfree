@@ -21,11 +21,11 @@ _DrawGameOver:  LD HL, GameOverTxt
                 JR NZ, .draw
                 RET
 
+SECTION "GameOver", ROM0
+
 DrawGameOver:   LD A, BANK(_DrawGameOver)
                 LD [$2000], A
                 JP _DrawGameOver
-
-SECTION "GameOver", ROM0
 
 StartGameOver:: CALL InitVBlank
                 CALL LoadFont
