@@ -1,20 +1,24 @@
-include "ball.inc"
+INCLUDE "ball.inc"
+INCLUDE "enemies.inc"
 INCLUDE "game.inc"
+
 
 WINDOW_Y        EQU 136
 NUM_OF_STAGES   EQU 2
 
 SECTION "GameVars", WRAM0
+
 NoOfLives::         DS 1
 BricksBroken::      DS 1
 Score::             DS SCORE_BYTES
 TileAtBall:         DS 1
 ReplacementTile:    DS 1
 ReplacementBrick::  DS 1
-EnemyX::            DS 1
-EnemyY::            DS 1
-EnemyVelocityX:     DS 1
-EnemyVelocityY:     DS 1
+EnemyXs::           DS NUM_OF_ENEMIES
+EnemyYs::           DS NUM_OF_ENEMIES
+EnemyVelocityXs:    DS NUM_OF_ENEMIES
+EnemyVelocityYs:    DS NUM_OF_ENEMIES
+CurrentEnemy::      DS 1
 
 SECTION "Game", ROM0
 
@@ -34,25 +38,77 @@ StartGame:: CALL InitGameVBlank
             LD [HL], HIGH(Game)
             RET
 
-InitEnemy:  LD A, 100
-            LD [EnemyX], A
-            LD [EnemyY], A
-            LD A, 1
-            LD [EnemyVelocityX], A
-            XOR A
-            LD [EnemyVelocityY], A
-            RET
-
-DestroyEnemy::  ; position enemy off screen
-                LD A, 200
-                LD [EnemyX], A
-                LD [EnemyY], A
-                ; stop enemy movement
-                XOR A
-                LD [EnemyVelocityX], A
-                LD [EnemyVelocityY], A
-                ; TODO: some kind of animation
+InitEnemyXs:    LD A, 100
+                LD B, NUM_OF_ENEMIES
+                LD HL, EnemyXs
+.loop           LD [HLI], A
+                DEC B
+                JR NZ, .loop
                 RET
+
+InitEnemyYs:    LD A, 100
+                LD B, NUM_OF_ENEMIES
+                LD HL, EnemyYs
+.loop           LD [HLI], A
+                DEC B
+                JR NZ, .loop
+                RET
+
+InitEnemyVelocityXs:    LD B, NUM_OF_ENEMIES
+                        LD HL, EnemyVelocityXs
+.loop                   LD A, B
+                        AND %00000011
+                        LD [HLI], A
+                        DEC B
+                        JR NZ, .loop
+                        RET
+
+InitEnemyVelocityYs:    LD B, NUM_OF_ENEMIES
+                        LD HL, EnemyVelocityYs
+.loop                   LD A, B
+                        AND %00000011
+                        LD [HLI], A
+                        DEC B
+                        JR NZ, .loop
+                        RET
+
+InitEnemies:    CALL InitEnemyXs
+                CALL InitEnemyYs
+                CALL InitEnemyVelocityXs
+                CALL InitEnemyVelocityYs
+                RET
+
+PositionCurrentEnemyOffScreen:  ; X position
+                                LD H, HIGH(EnemyXs)
+                                LD A, [CurrentEnemy]
+                                ADD LOW(EnemyXs)
+                                LD L, A
+                                LD [HL], 200
+                                ; Y position
+                                LD H, HIGH(EnemyYs)
+                                LD A, [CurrentEnemy]
+                                ADD LOW(EnemyYs)
+                                LD L, A
+                                LD [HL], 200
+                                RET
+
+StopCurrentEnemy:   ; X velocity
+                    LD H, HIGH(EnemyVelocityXs)
+                    LD A, [CurrentEnemy]
+                    ADD LOW(EnemyVelocityXs)
+                    LD L, A
+                    LD [HL], 0
+                    ; Y position
+                    LD H, HIGH(EnemyVelocityYs)
+                    LD A, [CurrentEnemy]
+                    ADD LOW(EnemyVelocityYs)
+                    LD L, A
+                    LD [HL], 0
+                    RET
+
+DestroyCurrentEnemy::   CALL PositionCurrentEnemyOffScreen
+                        CALL StopCurrentEnemy
+                        RET
 
 SetupWindowInterrupt:   ; fire interrupt on LYC=LY coincidence
                         LD A, %01000000
@@ -74,31 +130,91 @@ Game:   CALL WaitForVBlank
         CALL UpdateInput
         CALL UpdateBall
         CALL UpdatePaddle
-        CALL UpdateEnemy
+        CALL UpdateEnemies
         CALL SetupBallOAM
         CALL SetupPaddleOAM
-        CALL SetupEnemyOAM
+        CALL SetupEnemyOAMs
         RET
 
-UpdateEnemy:    LD HL, EnemyX
-                LD A, [EnemyVelocityX]
-                ADD [HL]
+UpdateCurrentEnemy: ; update X position
+                     LD H, HIGH(EnemyVelocityXs)
+                     LD A, [CurrentEnemy]
+                     ADD LOW(EnemyVelocityXs)
+                     LD L, A
+                     LD B, [HL]
+                     LD H, HIGH(EnemyXs)
+                     LD A, [CurrentEnemy]
+                     ADD LOW(EnemyXs)
+                     LD L, A
+                     LD A, B
+                     ADD [HL]
+                     LD [HL], A
+                     ; update Y position
+                     LD H, HIGH(EnemyVelocityYs)
+                     LD A, [CurrentEnemy]
+                     ADD LOW(EnemyVelocityYs)
+                     LD L, A
+                     LD B, [HL]
+                     LD H, HIGH(EnemyYs)
+                     LD A, [CurrentEnemy]
+                     ADD LOW(EnemyYs)
+                     LD L, A
+                     LD A, B
+                     ADD [HL]
+                     LD [HL], A
+                     RET
+
+UpdateEnemies:  XOR A
+                LD [CurrentEnemy], A
+.loop           CALL UpdateCurrentEnemy
+                LD HL, CurrentEnemy
+                LD A, [HL]
+                INC A
                 LD [HL], A
-                LD HL, EnemyY
-                LD A, [EnemyVelocityY]
-                ADD [HL]
-                LD [HL], A
+                CP NUM_OF_ENEMIES
+                JR NZ, .loop
                 RET
 
 ENEMY_TILE      EQU 2
 
-SetupEnemyOAM:  LD HL, ShadowOAM+4*4
-                LD A, [EnemyY]
-                LD [HLI], A
-                LD A, [EnemyX]
-                LD [HLI], A
-                LD [HL], ENEMY_TILE
+SetupEnemyOAMs: CALL SetupEnemyOAMsY
+                CALL SetupEnemyOAMsX
+                CALL SetupEnemyOAMsTile
                 RET
+
+SetupEnemyOAMsY:    LD HL, EnemyYs
+                    LD DE, ShadowOAM+4*4
+                    LD B, NUM_OF_ENEMIES
+.loop               LD A, [HLI]
+                    LD [DE], A
+                    LD A, E
+                    ADD 4
+                    LD E, A
+                    DEC B
+                    JR NZ, .loop
+                    RET
+
+SetupEnemyOAMsX:    LD HL, EnemyXs
+                    LD DE, ShadowOAM+4*4+1
+                    LD B, NUM_OF_ENEMIES
+.loop               LD A, [HLI]
+                    LD [DE], A
+                    LD A, E
+                    ADD 4
+                    LD E, A
+                    DEC B
+                    JR NZ, .loop
+                    RET
+
+SetupEnemyOAMsTile: LD HL, ShadowOAM+4*4+2
+                    LD B, NUM_OF_ENEMIES
+.loop               LD [HL], ENEMY_TILE
+                    LD A, L
+                    ADD 4
+                    LD L, A
+                    DEC B
+                    JR NZ, .loop
+                    RET
 
 TurnOnScreen:   ; enable display
                 ; BG tiles at $8800
@@ -156,7 +272,7 @@ NewGame:    LD A, STARTING_LIVES
 InitGame:   CALL InitBall
             CALL InitPaddle
             CALL InitStage
-            CALL InitEnemy
+            CALL InitEnemies
             RET
 
 LevelComplete:  LD HL, CurrentStage

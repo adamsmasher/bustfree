@@ -230,53 +230,66 @@ CheckStageCollideY::    CALL CheckBallInBounds
 ENEMY_HEIGHT    EQU 8
 ENEMY_WIDTH     EQU 8
 
-CheckEnemyCollide:  XOR A
-                    LD [EnemyCollisionFlag], A
-                    ; check left bound
-                    LD A, [BallX+1]
-                    ; get center of ball
-                    ADD 4   
-                    LD B, A
-                    LD A, [EnemyX]
-                    CP B
-                    RET NC
-                    ; check right bound
-                    ADD ENEMY_WIDTH
-                    CP B
-                    RET C
-                    ; check top bound
-                    LD A, [BallY+1]
-                    ; get center of ball
-                    ADD 4
-                    LD B, A
-                    LD A, [EnemyY]
-                    CP B
-                    RET NC
-                    ; check bottom bound
-                    ADD ENEMY_HEIGHT
-                    CP B
-                    RET C
-                    LD A, 1
-                    LD [EnemyCollisionFlag], A
-                    RET
+CheckCurrentEnemyCollide:   XOR A
+                            LD [EnemyCollisionFlag], A
+                            ; check left bound
+                            LD A, [BallX+1]
+                            ; get center of ball
+                            ADD 4   
+                            LD B, A
+                            ; get enemy X
+                            LD H, HIGH(EnemyXs)
+                            LD A, [CurrentEnemy]
+                            ADD LOW(EnemyXs)
+                            LD L, A
+                            LD A, [HL]
+                            ; check
+                            CP B
+                            RET NC
+                            ; check right bound
+                            ADD ENEMY_WIDTH
+                            CP B
+                            RET C
+                            ; check top bound
+                            LD A, [BallY+1]
+                            ; get center of ball
+                            ADD 4
+                            LD B, A
+                            ; get enemy Y
+                            LD H, HIGH(EnemyYs)
+                            LD A, [CurrentEnemy]
+                            ADD LOW(EnemyYs)
+                            LD L, A
+                            LD A, [HL]
+                            ; check
+                            CP B
+                            RET NC
+                            ; check bottom bound
+                            ADD ENEMY_HEIGHT
+                            CP B
+                            RET C
+                            LD A, 1
+                            LD [EnemyCollisionFlag], A
+                            RET
 
-CheckEnemyCollideX::    CALL CheckEnemyCollide
-                        LD A, [EnemyCollisionFlag]
-                        AND A
-                        RET Z
-                        ; we collided, so reflect and reposition
-                        CALL ReflectBallX
-                        CALL SpeedUpBall
-                        ; TODO: destroy enemy
-                        RET
+CheckCurrentEnemyCollideX:: CALL CheckCurrentEnemyCollide
+                            LD A, [EnemyCollisionFlag]
+                            AND A
+                            RET Z
+                            ; we collided, so reflect and reposition
+                            CALL BounceX
+                            CALL SpeedUpBall
+                            CALL DestroyCurrentEnemy
+                            ; TODO: give points for destroying the enemy
+                            RET
 
-CheckEnemyCollideY::    CALL CheckEnemyCollide
-                        LD A, [EnemyCollisionFlag]
-                        AND A
-                        RET Z
-                        ; we collided, so reflect and reposition
-                        CALL ReflectBallY
-                        CALL SpeedUpBall
-                        CALL DestroyEnemy
-                        ; TODO: give points for destroying the enemy
-                        RET
+CheckCurrentEnemyCollideY:: CALL CheckCurrentEnemyCollide
+                            LD A, [EnemyCollisionFlag]
+                            AND A
+                            RET Z
+                            ; we collided, so reflect and reposition
+                            CALL BounceY
+                            CALL SpeedUpBall
+                            CALL DestroyCurrentEnemy
+                            ; TODO: give points for destroying the enemy
+                            RET
