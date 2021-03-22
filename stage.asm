@@ -79,24 +79,10 @@ InitStage:: CALL InitStagePtr
 
 SECTION "StageData", ROMX, ALIGN[8]
 StageData:
-PUSHC
-CHARMAP ".", 0
-CHARMAP "-", $10
-CHARMAP "_", $01
-CHARMAP "=", $11
 ; level 0
 INCBIN "level0.lvl"
-; stage 1
-;   0123456789ABCDEF
-DB "..=..=..=..=..=."
-DB "..=..=..=..=..=."
-DB "..=..=..=..=..=."
-DB "..=..=..=..=..=."
-DB "..=..=..=..=..=."
-DB "..=..=..=..=..=."
-DB "..=..=..=..=..=."
-DB "..=..=..=..=..=."
-POPC
+; level 1
+INCBIN "level1.lvl"
 
 _InitStageMap:  LD HL, CurrentStagePtr
                 LD A, [HLI]
