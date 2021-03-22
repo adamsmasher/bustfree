@@ -88,6 +88,18 @@ CapScore:       LD A, $99
                 JR NZ, .loop
                 RET
 
+AddLifeOnScore: LD HL, Score
+                LD A, [HLI]
+                AND A
+                RET NZ
+                LD A, [HL]
+                AND $0F
+                CP $05
+                RET NZ
+                LD HL, NoOfLives
+                INC [HL]
+                RET
+
 IncrementScore::    LD HL, Score
 .loop               LD A, L
                     CP LOW(Score) + SCORE_BYTES
@@ -97,6 +109,7 @@ IncrementScore::    LD HL, Score
                     DAA
                     LD [HLI], A
                     JR C, .loop
+                    CALL AddLifeOnScore
                     CALL DrawStatus
                     RET
 
