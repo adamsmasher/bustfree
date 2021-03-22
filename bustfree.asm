@@ -27,8 +27,9 @@ Main:   DI
         LD BC, BANK(Music_s11space)
         LD DE, Music_s11space
         CALL Music_Play
-
-.loop   CALL SoundSystem_Process
+.loop   CALL WaitForVBlank
+        CALL UpdateInput
+        CALL SoundSystem_Process
         CALL RunLoop
         JR .loop
 

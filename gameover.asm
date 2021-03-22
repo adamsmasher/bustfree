@@ -39,8 +39,7 @@ StartGameOver:: CALL InitVBlank
                 LD [HL], HIGH(GameOver)
                 RET
 
-GameOver:   CALL WaitForVBlank
-            LD HL, GameOverTimer
+GameOver:   LD HL, GameOverTimer
             DEC [HL]
             RET NZ
             CALL TurnOffScreen

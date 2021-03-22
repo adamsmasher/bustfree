@@ -312,9 +312,7 @@ HandleWaiting:  LD HL, Delay
                 CALL StartGame
                 RET
 
-TitleScreen:    CALL WaitForVBlank
-                CALL UpdateInput
-                LD A, [TitleScreenState]
+TitleScreen:    LD A, [TitleScreenState]
                 CP STATE_SCROLLING1
                 JP Z, HandleScrolling1
                 CP STATE_SCROLLING2

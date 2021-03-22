@@ -48,9 +48,7 @@ DisableWindowInterrupt: ; disable stat interrupt
                         RES 1, [HL]
                         RET
 
-Game:   CALL WaitForVBlank
-        CALL UpdateInput
-        CALL UpdateBall
+Game:   CALL UpdateBall
         CALL UpdatePaddle
         CALL SetupBallOAM
         CALL SetupPaddleOAM
