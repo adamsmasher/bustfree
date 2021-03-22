@@ -5,8 +5,17 @@ INCLUDE "game.inc"
 WINDOW_Y        EQU 136
 NUM_OF_STAGES   EQU 2
 
+GET_READY       EQU 0
+PLAYING         EQU 1
+NEXT_LEVEL      EQU 2
+
+GET_READY_JINGLE_LENGTH     EQU 150
+NEXT_LEVEL_JINGLE_LENGTH    EQU 150
+
 SECTION "GameVars", WRAM0
 
+GameState:          DS 1
+GameTimer:          DS 1
 NoOfLives::         DS 1
 BricksBroken::      DS 1
 Score::             DS SCORE_BYTES
@@ -48,11 +57,38 @@ DisableWindowInterrupt: ; disable stat interrupt
                         RES 1, [HL]
                         RET
 
-Game:   CALL UpdateBall
-        CALL UpdatePaddle
-        CALL SetupBallOAM
-        CALL SetupPaddleOAM
-        RET
+Game:   LD A, [GameState]
+        CP GET_READY
+        JP Z, DoGetReady
+        CP PLAYING
+        JP Z, DoPlaying
+        CP NEXT_LEVEL
+        JP Z, DoNextLevel
+
+DoGetReady: LD HL, GameTimer
+            DEC [HL]
+            JP Z, StartPlaying
+            RET
+
+DoNextLevel:    LD HL, GameTimer
+                DEC [HL]
+                JP Z, LevelComplete
+                RET
+
+StartPlaying:   LD A, PLAYING
+                LD [GameState], A
+                RET
+
+StartNextLevel: LD A, NEXT_LEVEL
+                LD [GameState], A
+                LD A, NEXT_LEVEL_JINGLE_LENGTH
+                RET
+
+DoPlaying:  CALL UpdateBall
+            CALL UpdatePaddle
+            CALL SetupBallOAM
+            CALL SetupPaddleOAM
+            RET
 
 TurnOnScreen:   ; enable display
                 ; BG tiles at $8800
@@ -120,9 +156,16 @@ NewGame:    LD A, STARTING_LIVES
             CALL InitGame
             RET
 
+GetReady:   LD A, GET_READY
+            LD [GameState], A
+            LD A, GET_READY_JINGLE_LENGTH
+            LD [GameTimer], A
+            RET
+
 InitGame:   CALL InitBall
             CALL InitPaddle
             CALL InitStage
+            CALL GetReady
             RET
 
 LevelComplete:  LD HL, CurrentStage
@@ -231,7 +274,7 @@ OnBrickDestroyed::  CALL IncrementScore
                     LD A, [HL]
                     INC A
                     CP B
-                    JP Z, LevelComplete
+                    JP Z, StartNextLevel
                     LD [HL], A
                     RET
 
