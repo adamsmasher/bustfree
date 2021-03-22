@@ -1,22 +1,11 @@
-* show high score on title screen
 * get ready/level complete break
 * animations?
-  * ball spinning
   * bricks exploding
-  * on paddle collision
 * extra lives at particular scores
 * balance the game so that it's actually possible to win
-  * adjust spin?
   * slow down ball speed ups?
-* better makefile
-* some sort of ending
 * sound + music
-* high score table
 * power ups
   + multi-ball
   + laser
   + ball breaks through bricks without bouncing
-* enemies
-* still some issues with imprecision with brick/ball collision detection?
-* super game boy support
-* borders/background
