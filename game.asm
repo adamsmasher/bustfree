@@ -1,5 +1,4 @@
 INCLUDE "ball.inc"
-INCLUDE "enemies.inc"
 INCLUDE "game.inc"
 
 
@@ -14,11 +13,6 @@ Score::             DS SCORE_BYTES
 TileAtBall:         DS 1
 ReplacementTile:    DS 1
 ReplacementBrick::  DS 1
-EnemyXs::           DS NUM_OF_ENEMIES
-EnemyYs::           DS NUM_OF_ENEMIES
-EnemyVelocityXs:    DS NUM_OF_ENEMIES
-EnemyVelocityYs:    DS NUM_OF_ENEMIES
-CurrentEnemy::      DS 1
 
 SECTION "Game", ROM0
 
@@ -37,78 +31,6 @@ StartGame:: CALL InitGameVBlank
             LD [HLI], A
             LD [HL], HIGH(Game)
             RET
-
-InitEnemyXs:    LD A, 100
-                LD B, NUM_OF_ENEMIES
-                LD HL, EnemyXs
-.loop           LD [HLI], A
-                DEC B
-                JR NZ, .loop
-                RET
-
-InitEnemyYs:    LD A, 100
-                LD B, NUM_OF_ENEMIES
-                LD HL, EnemyYs
-.loop           LD [HLI], A
-                DEC B
-                JR NZ, .loop
-                RET
-
-InitEnemyVelocityXs:    LD B, NUM_OF_ENEMIES
-                        LD HL, EnemyVelocityXs
-.loop                   LD A, B
-                        AND %00000011
-                        LD [HLI], A
-                        DEC B
-                        JR NZ, .loop
-                        RET
-
-InitEnemyVelocityYs:    LD B, NUM_OF_ENEMIES
-                        LD HL, EnemyVelocityYs
-.loop                   LD A, B
-                        AND %00000011
-                        LD [HLI], A
-                        DEC B
-                        JR NZ, .loop
-                        RET
-
-InitEnemies:    CALL InitEnemyXs
-                CALL InitEnemyYs
-                CALL InitEnemyVelocityXs
-                CALL InitEnemyVelocityYs
-                RET
-
-PositionCurrentEnemyOffScreen:  ; X position
-                                LD H, HIGH(EnemyXs)
-                                LD A, [CurrentEnemy]
-                                ADD LOW(EnemyXs)
-                                LD L, A
-                                LD [HL], 200
-                                ; Y position
-                                LD H, HIGH(EnemyYs)
-                                LD A, [CurrentEnemy]
-                                ADD LOW(EnemyYs)
-                                LD L, A
-                                LD [HL], 200
-                                RET
-
-StopCurrentEnemy:   ; X velocity
-                    LD H, HIGH(EnemyVelocityXs)
-                    LD A, [CurrentEnemy]
-                    ADD LOW(EnemyVelocityXs)
-                    LD L, A
-                    LD [HL], 0
-                    ; Y position
-                    LD H, HIGH(EnemyVelocityYs)
-                    LD A, [CurrentEnemy]
-                    ADD LOW(EnemyVelocityYs)
-                    LD L, A
-                    LD [HL], 0
-                    RET
-
-DestroyCurrentEnemy::   CALL PositionCurrentEnemyOffScreen
-                        CALL StopCurrentEnemy
-                        RET
 
 SetupWindowInterrupt:   ; fire interrupt on LYC=LY coincidence
                         LD A, %01000000
@@ -130,91 +52,9 @@ Game:   CALL WaitForVBlank
         CALL UpdateInput
         CALL UpdateBall
         CALL UpdatePaddle
-        CALL UpdateEnemies
         CALL SetupBallOAM
         CALL SetupPaddleOAM
-        CALL SetupEnemyOAMs
         RET
-
-UpdateCurrentEnemy: ; update X position
-                     LD H, HIGH(EnemyVelocityXs)
-                     LD A, [CurrentEnemy]
-                     ADD LOW(EnemyVelocityXs)
-                     LD L, A
-                     LD B, [HL]
-                     LD H, HIGH(EnemyXs)
-                     LD A, [CurrentEnemy]
-                     ADD LOW(EnemyXs)
-                     LD L, A
-                     LD A, B
-                     ADD [HL]
-                     LD [HL], A
-                     ; update Y position
-                     LD H, HIGH(EnemyVelocityYs)
-                     LD A, [CurrentEnemy]
-                     ADD LOW(EnemyVelocityYs)
-                     LD L, A
-                     LD B, [HL]
-                     LD H, HIGH(EnemyYs)
-                     LD A, [CurrentEnemy]
-                     ADD LOW(EnemyYs)
-                     LD L, A
-                     LD A, B
-                     ADD [HL]
-                     LD [HL], A
-                     RET
-
-UpdateEnemies:  XOR A
-                LD [CurrentEnemy], A
-.loop           CALL UpdateCurrentEnemy
-                LD HL, CurrentEnemy
-                LD A, [HL]
-                INC A
-                LD [HL], A
-                CP NUM_OF_ENEMIES
-                JR NZ, .loop
-                RET
-
-ENEMY_TILE      EQU 2
-
-SetupEnemyOAMs: CALL SetupEnemyOAMsY
-                CALL SetupEnemyOAMsX
-                CALL SetupEnemyOAMsTile
-                RET
-
-SetupEnemyOAMsY:    LD HL, EnemyYs
-                    LD DE, ShadowOAM+4*4
-                    LD B, NUM_OF_ENEMIES
-.loop               LD A, [HLI]
-                    LD [DE], A
-                    LD A, E
-                    ADD 4
-                    LD E, A
-                    DEC B
-                    JR NZ, .loop
-                    RET
-
-SetupEnemyOAMsX:    LD HL, EnemyXs
-                    LD DE, ShadowOAM+4*4+1
-                    LD B, NUM_OF_ENEMIES
-.loop               LD A, [HLI]
-                    LD [DE], A
-                    LD A, E
-                    ADD 4
-                    LD E, A
-                    DEC B
-                    JR NZ, .loop
-                    RET
-
-SetupEnemyOAMsTile: LD HL, ShadowOAM+4*4+2
-                    LD B, NUM_OF_ENEMIES
-.loop               LD [HL], ENEMY_TILE
-                    LD A, L
-                    ADD 4
-                    LD L, A
-                    DEC B
-                    JR NZ, .loop
-                    RET
 
 TurnOnScreen:   ; enable display
                 ; BG tiles at $8800
@@ -272,7 +112,6 @@ NewGame:    LD A, STARTING_LIVES
 InitGame:   CALL InitBall
             CALL InitPaddle
             CALL InitStage
-            CALL InitEnemies
             RET
 
 LevelComplete:  LD HL, CurrentStage

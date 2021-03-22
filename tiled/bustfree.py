@@ -25,11 +25,9 @@ class Example(Plugin):
 
     @classmethod
     def write(cls, tileMap, fileName):
-        assert tileMap.tileLayerCount() == 1
-
-        for i in range(tileMap.layerCount()):
-            if isTileLayerAt(tileMap, i):
-                rowTiles = cls.getRowTiles(tileLayerAt(tileMap, i))
+        assert tileMap.layerCount() == 1
+:
+        rowTiles = cls.getRowTiles(tileLayerAt(tileMap, 0))
 
         with open(fileName, 'wb') as fileHandle:
             for row in rowTiles:

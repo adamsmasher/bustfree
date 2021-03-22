@@ -29,18 +29,6 @@ DW `00000000
 DW `00000000
 PaddleTileDataEnd:
 
-EnemyTileData:
-DW `01111110
-DW `12333321
-DW `12333321
-DW `12333321
-DW `12333321
-DW `12333321
-DW `12121221
-DW `01010101
-EnemyTileDataEnd:
-    
-
 _LoadSpriteGfx: LD HL, PaddleTileData
                 LD DE, $8000
                 LD B, PaddleTileDataEnd - PaddleTileData
@@ -57,14 +45,6 @@ _LoadSpriteGfx: LD HL, PaddleTileData
                 INC E
                 DEC B
                 JR NZ, .loop2
-                LD HL, EnemyTileData
-                LD DE, $8020
-                LD B, 16
-.loop3          LD A, [HLI]
-                LD [DE], A
-                INC E
-                DEC B
-                JR NZ, .loop3
                 RET
 
 SECTION "LoadSpriteGfx", ROM0

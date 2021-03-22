@@ -1,5 +1,4 @@
 INCLUDE "ball.inc"
-INCLUDE "enemies.inc"
 INCLUDE "entity.inc"
 INCLUDE "input.inc"
 INCLUDE "paddle.inc"
@@ -117,33 +116,10 @@ ApplyBallVelocityY::    ApplyVelocity BallVelocityY, BallY
                         CALL UpdateBallRow
                         RET
 
-CheckEnemiesCollideX:   XOR A
-                        LD [CurrentEnemy], A
-.loop                   CALL CheckCurrentEnemyCollideX
-                        LD HL, CurrentEnemy
-                        LD A, [HL]
-                        INC A
-                        LD [HL], A
-                        CP NUM_OF_ENEMIES
-                        JR NZ, .loop
-                        RET
-
-CheckEnemiesCollideY:   XOR A
-                        LD [CurrentEnemy], A
-.loop                   CALL CheckCurrentEnemyCollideY
-                        LD HL, CurrentEnemy
-                        LD A, [HL]
-                        INC A
-                        LD [HL], A
-                        CP NUM_OF_ENEMIES
-                        JR NZ, .loop
-                        RET
-
 UpdateBallX:    CALL ApplyBallVelocityX
                 CALL CheckLeftCollide
                 CALL CheckRightCollide
                 CALL CheckStageCollideX
-                CALL CheckEnemiesCollideX
                 RET
 
 AddBallSpin::   LD HL, PaddleVelocityX
@@ -185,7 +161,6 @@ UpdateBallY:    CALL ApplyBallVelocityY
                 CALL CheckTopCollide
                 CALL CheckBottomCollide
                 CALL CheckStageCollideY
-                CALL CheckEnemiesCollideY
                 RET
 
 UpdateBall::    LD A, [BallState]
