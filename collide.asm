@@ -145,11 +145,15 @@ DoubleBrickHandlerX:    CALL DoubleBrickHandler
                         CALL BounceX
                         RET
 
-IndestructableBrickHandlerY: CALL SpeedUpBall
+IndestructableBrickHandler: CALL FlashBrickAtBall
+                            CALL SpeedUpBall
+                            RET
+
+IndestructableBrickHandlerY: CALL IndestructableBrickHandler
                              CALL BounceY
                              RET
 
-IndestructableBrickHandlerX: CALL SpeedUpBall
+IndestructableBrickHandlerX: CALL IndestructableBrickHandler
                              CALL BounceX
                              RET
 

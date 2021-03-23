@@ -23,6 +23,10 @@ TileAtBall:         DS 1
 ReplacementTile:    DS 1
 ReplacementBrick::  DS 1
 
+FlashBrickX:        DS 1
+FlashBrickY:        DS 1
+FlashTimer:         DS 1
+
 SECTION "Game", ROM0
 
 StartGame:: CALL InitGameVBlank
@@ -86,9 +90,19 @@ StartNextLevel: LD A, NEXT_LEVEL
 
 DoPlaying:  CALL UpdateBall
             CALL UpdatePaddle
+            CALL UpdateFlash
             CALL SetupBallOAM
             CALL SetupPaddleOAM
+            CALL SetupFlashOAM
             RET
+
+UpdateFlash:    LD HL, FlashTimer
+                LD A, [HL]
+                AND A
+                RET Z
+                DEC [HL]
+                CALL Z, InitFlash
+                RET
 
 TurnOnScreen:   ; enable display
                 ; BG tiles at $8800
@@ -164,9 +178,18 @@ GetReady:   LD A, GET_READY
 
 InitGame:   CALL InitBall
             CALL InitPaddle
+            CALL InitFlash
             CALL InitStage
             CALL GetReady
             RET
+
+InitFlash:      LD A, -8
+                LD [FlashBrickX], A
+                LD A, -16
+                LD [FlashBrickY], A
+                XOR A
+                LD [FlashTimer], A
+                RET
 
 LevelComplete:  LD HL, CurrentStage
                 LD A, [HL]
@@ -257,6 +280,18 @@ GetReplacementTile: LD A, [BallY+1]
                     LD [ReplacementTile], A
                     RET
 
+FlashBrickAtBall::      LD A, [BallX+1]
+                        ADD 4
+                        AND $F8
+                        LD [FlashBrickX], A
+                        LD A, [BallY+1]
+                        ADD 4
+                        AND $FC
+                        LD [FlashBrickY], A
+                        LD A, 8
+                        LD [FlashTimer], A
+                        RET
+
 ReplaceBrickAtBall::    CALL GetTileAtBall
                         CALL GetReplacementTile
                         CALL SetupReplaceBrickTransfer
@@ -288,3 +323,13 @@ InitGameStatHandler:    LD HL, StatHandler
                         LD [HLI], A
                         LD [HL], HIGH(GameStatHandler)
                         RET
+
+FLASH_TILE      EQU 2
+
+SetupFlashOAM:  LD HL, ShadowOAM+16
+                LD A, [FlashBrickY]
+                LD [HLI], A
+                LD A, [FlashBrickX]
+                LD [HLI], A
+                LD [HL], FLASH_TILE
+                RET

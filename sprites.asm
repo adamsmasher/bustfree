@@ -1,4 +1,14 @@
 SECTION "SpriteData", ROMX
+FlashTileData:
+DW `11111111
+DW `11111111
+DW `11111111
+DW `11111111
+DW `00000000
+DW `00000000
+DW `00000000
+DW `00000000
+
 BallTileData:
 DW `00000000
 DW `00000000
@@ -29,22 +39,39 @@ DW `00000000
 DW `00000000
 PaddleTileDataEnd:
 
-_LoadSpriteGfx: LD HL, PaddleTileData
+LoadPaddleGfx:  LD HL, PaddleTileData
                 LD DE, $8000
                 LD B, PaddleTileDataEnd - PaddleTileData
-.loop1          LD A, [HLI]
+.loop           LD A, [HLI]
                 LD [DE], A
                 INC E
                 DEC B
-                JR NZ, .loop1
-                LD HL, BallTileData
+                JR NZ, .loop
+                RET
+
+LoadBallGfx:    LD HL, BallTileData
                 LD DE, $8FF0
                 LD B, 16
-.loop2          LD A, [HLI]
+.loop           LD A, [HLI]
                 LD [DE], A
                 INC E
                 DEC B
-                JR NZ, .loop2
+                JR NZ, .loop
+                RET
+
+LoadFlashGfx:   LD HL, FlashTileData
+                LD DE, $8020
+                LD B, 16
+.loop           LD A, [HLI]
+                LD [DE], A
+                INC E
+                DEC B
+                JR NZ, .loop
+                RET
+
+_LoadSpriteGfx: CALL LoadPaddleGfx
+                CALL LoadBallGfx
+                CALL LoadFlashGfx
                 RET
 
 SECTION "LoadSpriteGfx", ROM0
