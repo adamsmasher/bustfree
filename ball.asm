@@ -64,19 +64,18 @@ ReflectBallY::  Reflect BallVelocityY
                 RET
 
 SpeedUpM:   MACRO
-        ; adds $10 if positive, otherwise $00
         LD HL, \1+1
         LD A, [HLD]
         RLCA
         JR C, .neg\@
         LD A, [HL]
-        ADD $10
+        ADD $02
         LD [HLI], A
         JR NC, .done\@
         INC [HL]
         JR .done\@
 .neg\@  LD A, [HL]
-        ADD -$10
+        ADD -$02
         LD [HLI], A
         JR C, .done\@
         DEC [HL]

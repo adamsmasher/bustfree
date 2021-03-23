@@ -7,6 +7,6 @@
 
 OFF STREAM
 
+* (UGH) fix bug where high X/Y ball positions are "negative"?
+* if the ball hits the left of the paddle treat it like hitting the side?
 * sound + music
-* balance the game so that it's actually possible to win
-  * slow down ball speed ups?
