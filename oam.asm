@@ -14,13 +14,15 @@ OAMDMA::    LD A, HIGH(ShadowOAM)
 .end
 ENDL
 
-InitShadowOAM:: ; clear shadow OAM
-                XOR A
-                LD HL, ShadowOAM
-                LD B, 4 * 40
-.shadowOAM      LD [HLI], A
-                DEC B
-                JR NZ, .shadowOAM
+ClearOAM::  XOR A
+            LD HL, ShadowOAM
+            LD B, 4 * 40
+.loop       LD [HLI], A
+            DEC B
+            JR NZ, .loop
+            RET
+
+InitShadowOAM:: CALL ClearOAM
                 ; copy the OAMDMA routine
                 LD HL, OAMDMACode
                 LD DE, OAMDMA

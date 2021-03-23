@@ -178,6 +178,7 @@ LevelComplete:  LD HL, CurrentStage
                 CALL TurnOffScreen
                 CALL InitGame
                 CALL DrawStage
+                CALL ClearOAM
                 CALL TurnOnScreen
                 RET
 
