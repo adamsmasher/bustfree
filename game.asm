@@ -12,6 +12,8 @@ NEXT_LEVEL      EQU 2
 GET_READY_JINGLE_LENGTH     EQU 150
 NEXT_LEVEL_JINGLE_LENGTH    EQU 150
 
+PARTICLES_PER_EFFECT    EQU 4
+
 SECTION "GameVars", WRAM0
 
 GameState:          DS 1
@@ -26,6 +28,10 @@ ReplacementBrick::  DS 1
 FlashBrickX:        DS 1
 FlashBrickY:        DS 1
 FlashTimer:         DS 1
+
+EffectTimer:        DS 1
+ParticleXs:         DS PARTICLES_PER_EFFECT
+ParticleYs:         DS PARTICLES_PER_EFFECT
 
 SECTION "Game", ROM0
 
@@ -91,9 +97,11 @@ StartNextLevel: LD A, NEXT_LEVEL
 DoPlaying:  CALL UpdateBall
             CALL UpdatePaddle
             CALL UpdateFlash
+            CALL UpdateEffect
             CALL SetupBallOAM
             CALL SetupPaddleOAM
             CALL SetupFlashOAM
+            CALL SetupEffectOAM
             RET
 
 UpdateFlash:    LD HL, FlashTimer
@@ -103,6 +111,56 @@ UpdateFlash:    LD HL, FlashTimer
                 DEC [HL]
                 CALL Z, InitFlash
                 RET
+
+UpdateParticleXs:   LD HL, ParticleXs
+                    ; top left
+                    LD A, [HL]
+                    SUB 2
+                    LD [HLI], A
+                    ; top right
+                    LD A, [HL]
+                    ADD 2
+                    LD [HLI], A
+                    ; bottom left
+                    LD A, [HL]
+                    SUB 2
+                    LD [HLI], A
+                    ; bottom right
+                    LD A, [HL]
+                    ADD 2
+                    LD [HLI], A
+                    RET
+
+UpdateParticleYs:   LD HL, ParticleYs
+                    ; top left
+                    LD A, [HLI]
+                    SUB 2
+                    LD [HLI], A
+                    ; top right
+                    LD A, [HL]
+                    SUB 2
+                    LD [HLI], A
+                    ; bottom left
+                    LD A, [HL]
+                    ADD 2
+                    LD [HLI], A
+                    ; bottom right
+                    LD A, [HL]
+                    ADD 2
+                    LD [HLI], A
+                    RET
+
+UpdateParticles:    CALL UpdateParticleXs
+                    CALL UpdateParticleYs
+                    RET
+
+UpdateEffect:   LD HL, EffectTimer
+                LD A, [HL]
+                AND A
+                RET Z
+                DEC [HL]
+                JP Z, InitEffect
+                JP UpdateParticles
 
 TurnOnScreen:   ; enable display
                 ; BG tiles at $8800
@@ -179,17 +237,43 @@ GetReady:   LD A, GET_READY
 InitGame:   CALL InitBall
             CALL InitPaddle
             CALL InitFlash
+            CALL InitEffect
             CALL InitStage
             CALL GetReady
             RET
 
-InitFlash:      LD A, -8
-                LD [FlashBrickX], A
-                LD A, -16
-                LD [FlashBrickY], A
-                XOR A
-                LD [FlashTimer], A
+InitFlash:  LD A, -8
+            LD [FlashBrickX], A
+            LD A, -16
+            LD [FlashBrickY], A
+            XOR A
+            LD [FlashTimer], A
+            RET
+
+InitParticleXs: LD A, -8
+                LD B, PARTICLES_PER_EFFECT
+                LD HL, ParticleXs
+.loop           LD [HLI], A
+                DEC B
+                JR NZ, .loop
                 RET
+
+InitParticleYs: LD A, -16
+                LD B, PARTICLES_PER_EFFECT
+                LD HL, ParticleYs
+.loop           LD [HLI], A
+                DEC B
+                JR NZ, .loop
+                RET
+
+InitParticles:  CALL InitParticleXs
+                CALL InitParticleYs
+                RET
+
+InitEffect: CALL InitParticles
+            XOR A
+            LD [EffectTimer], A
+            RET
 
 LevelComplete:  LD HL, CurrentStage
                 LD A, [HL]
@@ -303,7 +387,33 @@ ReplaceBrickOnStageMap: CALL GetBallMapAddr
                         LD [HL], A
                         RET
 
-OnBrickDestroyed::  CALL IncrementScore
+StartParticleXsAtBall:  LD A, [BallX+1]
+                        LD B, PARTICLES_PER_EFFECT
+                        LD HL, ParticleXs
+.loop                   LD [HLI], A
+                        DEC B
+                        JR NZ, .loop
+                        RET
+
+StartParticleYsAtBall:  LD A, [BallY+1]
+                        LD B, PARTICLES_PER_EFFECT
+                        LD HL, ParticleYs
+.loop                   LD [HLI], A
+                        DEC B
+                        JR NZ, .loop
+                        RET
+
+StartParticlesAtBall:   CALL StartParticleXsAtBall
+                        CALL StartParticleYsAtBall
+                        RET
+
+StartEffectAtBall:  CALL StartParticlesAtBall
+                    LD A, 30
+                    LD [EffectTimer], A
+                    RET
+
+OnBrickDestroyed::  CALL StartEffectAtBall
+                    CALL IncrementScore
                     LD A, [TotalBricks]
                     LD B, A
                     LD HL, BricksBroken
@@ -325,6 +435,7 @@ InitGameStatHandler:    LD HL, StatHandler
                         RET
 
 FLASH_TILE      EQU 2
+PARTICLE_TILE   EQU 3
 
 SetupFlashOAM:  LD HL, ShadowOAM+16
                 LD A, [FlashBrickY]
@@ -333,3 +444,42 @@ SetupFlashOAM:  LD HL, ShadowOAM+16
                 LD [HLI], A
                 LD [HL], FLASH_TILE
                 RET
+
+SetupEffectOAM: CALL SetupParticleXsOAM
+                CALL SetupParticleYsOAM
+                CALL SetupParticleTilesOAM
+                RET
+
+SetupParticleXsOAM:     LD DE, ShadowOAM+20+1
+                        LD HL, ParticleXs
+                        LD B, PARTICLES_PER_EFFECT
+.loop                   LD A, [HLI]
+                        LD [DE], A
+                        LD A, E
+                        ADD 4
+                        LD E, A
+                        DEC B
+                        JR NZ, .loop
+                        RET
+
+SetupParticleYsOAM:     LD DE, ShadowOAM+20
+                        LD HL, ParticleYs
+                        LD B, PARTICLES_PER_EFFECT
+.loop                   LD A, [HLI]
+                        LD [DE], A
+                        LD A, E
+                        ADD 4
+                        LD E, A
+                        DEC B
+                        JR NZ, .loop
+                        RET
+
+SetupParticleTilesOAM:  LD HL, ShadowOAM+20+2
+                        LD B, PARTICLES_PER_EFFECT
+.loop                   LD [HL], PARTICLE_TILE
+                        LD A, L
+                        ADD 4
+                        LD L, A
+                        DEC B
+                        JR NZ, .loop
+                        RET
