@@ -81,6 +81,7 @@ SECTION "StageData", ROMX, ALIGN[8]
 StageData:
 INCBIN "level0.lvl"
 INCBIN "level1.lvl"
+INCBIN "level2.lvl"
 
 _InitStageMap:  LD HL, CurrentStagePtr
                 LD A, [HLI]
