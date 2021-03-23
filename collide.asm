@@ -133,6 +133,7 @@ NormalBrickHandlerX:    CALL NormalBrickHandler
 
 DoubleBrickHandler: LD A, 1
                     LD [ReplacementBrick], A
+                    CALL FlashBrickAtBall
                     CALL ReplaceBrickAtBall
                     CALL SpeedUpBall
                     RET
