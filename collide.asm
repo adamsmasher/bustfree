@@ -1,5 +1,6 @@
 include "ball.inc"
 INCLUDE "paddle.inc"
+INCLUDE "powerup.inc"
 
 SECTION "CollideRAM", WRAM0
 CollisionTile:      DS 1
@@ -124,11 +125,15 @@ NormalBrickHandler: XOR A
                     RET
 
 NormalBrickHandlerY:    CALL NormalBrickHandler
-                        CALL BounceY
+                        LD A, [PowerUpState]
+                        CP SPIKE_POWERUP
+                        CALL NZ, BounceY
                         RET
 
 NormalBrickHandlerX:    CALL NormalBrickHandler
-                        CALL BounceX
+                        LD A, [PowerUpState]
+                        CP SPIKE_POWERUP
+                        CALL NZ, BounceX
                         RET
 
 DoubleBrickHandler: LD A, 1

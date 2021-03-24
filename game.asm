@@ -1,6 +1,6 @@
 INCLUDE "ball.inc"
 INCLUDE "game.inc"
-
+INCLUDE "powerup.inc"
 
 WINDOW_Y        EQU 136
 NUM_OF_STAGES   EQU 2
@@ -24,6 +24,7 @@ Score::             DS SCORE_BYTES
 TileAtBall:         DS 1
 ReplacementTile:    DS 1
 ReplacementBrick::  DS 1
+PowerUpState::      DS 1
 
 FlashBrickX:        DS 1
 FlashBrickY:        DS 1
@@ -239,6 +240,8 @@ InitGame:   CALL InitBall
             CALL InitFlash
             CALL InitEffect
             CALL InitStage
+            LD A, NO_POWERUP
+            LD [PowerUpState], A
             CALL GetReady
             RET
 
