@@ -8,3 +8,6 @@ OFF STREAM
 
 * (UGH) fix bug where high X/Y ball positions are "negative"?
 * sound + music
+* move lasers, particles, flashes into separate modules from game
+* consolidate sprite graphics
+* ugh undo ring buffer stuff

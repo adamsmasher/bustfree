@@ -1,5 +1,7 @@
 INCLUDE "ball.inc"
 INCLUDE "game.inc"
+INCLUDE "laser.inc"
+INCLUDE "paddle.inc"
 INCLUDE "powerup.inc"
 
 WINDOW_Y        EQU 136
@@ -13,6 +15,10 @@ GET_READY_JINGLE_LENGTH     EQU 150
 NEXT_LEVEL_JINGLE_LENGTH    EQU 150
 
 PARTICLES_PER_EFFECT    EQU 4
+
+MAX_LASERS      EQU 4
+NEXT_LASER_MASK EQU MAX_LASERS - 1
+LASER_OFFSCREEN EQU -36
 
 SECTION "GameVars", WRAM0
 
@@ -33,6 +39,11 @@ FlashTimer:         DS 1
 EffectTimer:        DS 1
 ParticleXs:         DS PARTICLES_PER_EFFECT
 ParticleYs:         DS PARTICLES_PER_EFFECT
+
+LaserXs::           DS MAX_LASERS
+LaserYs::           DS MAX_LASERS
+LaserCnt:           DS 1
+NextLaser:          DS 1
 
 SECTION "Game", ROM0
 
@@ -99,11 +110,57 @@ DoPlaying:  CALL UpdateBall
             CALL UpdatePaddle
             CALL UpdateFlash
             CALL UpdateEffect
+            CALL UpdateLasers
             CALL SetupBallOAM
             CALL SetupPaddleOAM
             CALL SetupFlashOAM
             CALL SetupEffectOAM
+            CALL SetupLasersOAM
             RET
+
+FireLaser:: LD HL, LaserCnt
+            LD A, [HL]
+            CP MAX_LASERS
+            RET Z
+            INC [HL]
+            LD A, [NextLaser]
+            LD HL, LaserYs
+            ADD L
+            LD L, A
+            LD [HL], PADDLE_Y - LASER_HEIGHT
+            LD A, [NextLaser]
+            LD HL, LaserXs
+            ADD L
+            LD L, A
+            LD A, [PaddleX+1]
+            ADD PADDLE_WIDTH/2 - 4
+            LD [HL], A
+            LD HL, NextLaser
+            LD A, [HL]
+            INC A
+            AND NEXT_LASER_MASK
+            LD [HL], A
+            RET
+
+UpdateLasers:   LD HL, LaserYs
+                LD B, MAX_LASERS
+.loop           LD A, [HL]
+                CP LASER_OFFSCREEN
+                JR Z, .next
+                CP 144
+                JR C, .update
+                CP 256 - LASER_HEIGHT
+                LD [HL], LASER_OFFSCREEN
+                LD A, [LaserCnt]
+                DEC A
+                LD [LaserCnt], A
+                JR .next
+.update         SUB 2
+                LD [HL], A
+.next           INC L
+                DEC B
+                JR NZ, .loop
+                RET
 
 UpdateFlash:    LD HL, FlashTimer
                 LD A, [HL]
@@ -142,10 +199,6 @@ UpdateParticleYs:   LD HL, ParticleYs
                     SUB 2
                     LD [HLI], A
                     ; bottom left
-                    LD A, [HL]
-                    ADD 2
-                    LD [HLI], A
-                    ; bottom right
                     LD A, [HL]
                     ADD 2
                     LD [HLI], A
@@ -239,6 +292,7 @@ InitGame:   CALL InitBall
             CALL InitPaddle
             CALL InitFlash
             CALL InitEffect
+            CALL InitLasers
             CALL InitStage
             LD A, NO_POWERUP
             LD [PowerUpState], A
@@ -252,6 +306,29 @@ InitFlash:  LD A, -8
             XOR A
             LD [FlashTimer], A
             RET
+
+InitLaserXs:    LD HL, LaserXs
+                LD A, -8
+                LD B, MAX_LASERS
+.loop           LD [HLI], A
+                DEC B
+                JR NZ, .loop
+                RET
+
+InitLaserYs:    LD HL, LaserYs
+                LD A, LASER_OFFSCREEN
+                LD B, MAX_LASERS
+.loop           LD [HLI], A
+                DEC B
+                JR NZ, .loop
+                RET
+
+InitLasers:     CALL InitLaserXs
+                CALL InitLaserYs
+                XOR A
+                LD [LaserCnt], A
+                LD [NextLaser], A
+                RET
 
 InitParticleXs: LD A, -8
                 LD B, PARTICLES_PER_EFFECT
@@ -439,6 +516,7 @@ InitGameStatHandler:    LD HL, StatHandler
 
 FLASH_TILE      EQU 2
 PARTICLE_TILE   EQU 3
+LASER_TILE      EQU 4
 
 SetupFlashOAM:  LD HL, ShadowOAM+16
                 LD A, [FlashBrickY]
@@ -486,3 +564,42 @@ SetupParticleTilesOAM:  LD HL, ShadowOAM+20+2
                         DEC B
                         JR NZ, .loop
                         RET
+
+SetupLaserYsOAM:    LD DE, ShadowOAM+36
+                    LD HL, LaserYs
+                    LD B, MAX_LASERS
+.loop               LD A, [HLI]
+                    LD [DE], A
+                    LD A, E
+                    ADD 4
+                    LD E, A
+                    DEC B
+                    JR NZ, .loop
+                    RET
+
+SetupLaserXsOAM:    LD DE, ShadowOAM+36+1
+                    LD HL, LaserXs
+                    LD B, MAX_LASERS
+.loop               LD A, [HLI]
+                    LD [DE], A
+                    LD A, E
+                    ADD 4
+                    LD E, A
+                    DEC B
+                    JR NZ, .loop
+                    RET
+
+SetupLaserTilesOAM: LD HL, ShadowOAM+36+2
+                    LD B, MAX_LASERS
+.loop               LD [HL], LASER_TILE
+                    LD A, L
+                    ADD 4
+                    LD L, A
+                    DEC B
+                    JR NZ, .loop
+                    RET
+
+SetupLasersOAM: CALL SetupLaserYsOAM
+                CALL SetupLaserXsOAM
+                CALL SetupLaserTilesOAM
+                RET

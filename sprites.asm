@@ -19,6 +19,16 @@ DW `00000000
 DW `00000000
 DW `00000000
 
+LaserTileData:
+DW `00011000
+DW `00122100
+DW `00122100
+DW `00122100
+DW `00122100
+DW `00122100
+DW `00122100
+DW `00011000
+
 BallTileData:
 DW `00000000
 DW `00000000
@@ -89,10 +99,21 @@ LoadParticleGfx:    LD HL, ParticleTileData
                     JR NZ, .loop
                     RET
 
+LoadLaserGfx:   LD HL, LaserTileData
+                LD DE, $8040
+                LD B, 16
+.loop           LD A, [HLI]
+                LD [DE], A
+                INC E
+                DEC B
+                JR NZ, .loop
+                RET
+
 _LoadSpriteGfx: CALL LoadPaddleGfx
                 CALL LoadBallGfx
                 CALL LoadFlashGfx
                 CALL LoadParticleGfx
+                CALL LoadLaserGfx
                 RET
 
 SECTION "LoadSpriteGfx", ROM0

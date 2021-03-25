@@ -1,6 +1,8 @@
 INCLUDE "entity.inc"
 INCLUDE "input.inc"
+INCLUDE "laser.inc"
 INCLUDE "paddle.inc"
+INCLUDE "powerup.inc"
 
 SECTION "PaddleRAM", WRAM0
 PaddleX::           DS 2
@@ -38,6 +40,15 @@ HandleRunning:  LD A, [KeysUp]
 
 HandleInput:    CALL HandleMovement
                 CALL HandleRunning
+                CALL HandleLaser
+                RET
+
+HandleLaser:    LD A, [PowerUpState]
+                CP LASER_POWERUP
+                RET NZ
+                LD A, [KeysPressed]
+                BIT INPUT_A, A
+                CALL NZ, FireLaser
                 RET
 
 CheckLeftCollide:   LD A, [PaddleX+1]
