@@ -3,6 +3,7 @@ rgbgfx complete.png -o all_bricks.bin
 rgbasm -o ball.o ball.asm
 rgbasm -o bustfree.o bustfree.asm
 rgbasm -o collide.o collide.asm
+rgbasm -o flash.o flash.asm
 rgbasm -o font.o font.asm
 rgbasm -o game.o game.asm
 rgbasm -o gameover.o gameover.asm
@@ -22,5 +23,5 @@ rgbasm -o tiles.o tiles.asm
 rgbasm -o titlescreen.o titlescreen.asm
 rgbasm -o vblank.o vblank.asm
 rgbasm -o AudioDriver/SoundSystem.o AudioDriver/SoundSystem.asm
-rgblink -d -m bustfree.map -n bustfree.sym -o bustfree.gb ball.o bustfree.o collide.o font.o game.o gameover.o game_vblank.o handlers.o header.o input.o laser.o oam.o paddle.o s11space.o sprites.o stage.o stat.o status.o tiles.o titlescreen.o vblank.o AudioDriver/SoundSystem.o
+rgblink -d -m bustfree.map -n bustfree.sym -o bustfree.gb ball.o bustfree.o collide.o flash.o font.o game.o gameover.o game_vblank.o handlers.o header.o input.o laser.o oam.o paddle.o s11space.o sprites.o stage.o stat.o status.o tiles.o titlescreen.o vblank.o AudioDriver/SoundSystem.o
 rgbfix -v -m 1 -p 0 bustfree.gb

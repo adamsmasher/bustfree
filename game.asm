@@ -27,10 +27,6 @@ ReplacementTile:    DS 1
 ReplacementBrick::  DS 1
 PowerUpState::      DS 1
 
-FlashBrickX:        DS 1
-FlashBrickY:        DS 1
-FlashTimer:         DS 1
-
 EffectTimer:        DS 1
 ParticleXs:         DS PARTICLES_PER_EFFECT
 ParticleYs:         DS PARTICLES_PER_EFFECT
@@ -107,14 +103,6 @@ DoPlaying:  CALL UpdateBall
             CALL SetupEffectOAM
             CALL SetupLasersOAM
             RET
-
-UpdateFlash:    LD HL, FlashTimer
-                LD A, [HL]
-                AND A
-                RET Z
-                DEC [HL]
-                CALL Z, InitFlash
-                RET
 
 UpdateParticleXs:   LD HL, ParticleXs
                     ; top left
@@ -245,14 +233,6 @@ InitGame:   CALL InitBall
             CALL GetReady
             RET
 
-InitFlash:  LD A, -8
-            LD [FlashBrickX], A
-            LD A, -16
-            LD [FlashBrickY], A
-            XOR A
-            LD [FlashTimer], A
-            RET
-
 InitParticleXs: LD A, -8
                 LD B, PARTICLES_PER_EFFECT
                 LD HL, ParticleXs
@@ -367,18 +347,6 @@ GetReplacementTile: LD A, [BallY+1]
                     LD [ReplacementTile], A
                     RET
 
-FlashBrickAtBall::      LD A, [BallX+1]
-                        ADD 4
-                        AND $F8
-                        LD [FlashBrickX], A
-                        LD A, [BallY+1]
-                        ADD 4
-                        AND $FC
-                        LD [FlashBrickY], A
-                        LD A, 8
-                        LD [FlashTimer], A
-                        RET
-
 ReplaceBrickAtBall::    CALL GetTileAtBall
                         CALL GetReplacementTile
                         CALL SetupReplaceBrickTransfer
@@ -437,16 +405,7 @@ InitGameStatHandler:    LD HL, StatHandler
                         LD [HL], HIGH(GameStatHandler)
                         RET
 
-FLASH_TILE      EQU 2
 PARTICLE_TILE   EQU 3
-
-SetupFlashOAM:  LD HL, ShadowOAM+16
-                LD A, [FlashBrickY]
-                LD [HLI], A
-                LD A, [FlashBrickX]
-                LD [HLI], A
-                LD [HL], FLASH_TILE
-                RET
 
 SetupEffectOAM: CALL SetupParticleXsOAM
                 CALL SetupParticleYsOAM

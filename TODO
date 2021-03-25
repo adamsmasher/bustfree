@@ -11,3 +11,4 @@ OFF STREAM
 * move lasers, particles, flashes into separate modules from game
 * consolidate sprite graphics
 * ugh undo ring buffer stuff
+* disabled LCD outside of vblank when starting game?
