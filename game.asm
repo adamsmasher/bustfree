@@ -1,6 +1,4 @@
-INCLUDE "ball.inc"
 INCLUDE "game.inc"
-INCLUDE "paddle.inc"
 INCLUDE "powerup.inc"
 
 WINDOW_Y        EQU 136
