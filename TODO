@@ -8,6 +8,5 @@ OFF STREAM
 
 * (UGH) fix bug where high X/Y ball positions are "negative"?
 * sound + music
-* consolidate sprite graphics
 * ugh undo ring buffer stuff
 * disabled LCD outside of vblank when starting game?
