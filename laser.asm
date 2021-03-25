@@ -1,17 +1,16 @@
 INCLUDE "laser.inc"
 INCLUDE "paddle.inc"
 
-MAX_LASERS      EQU 4
-NEXT_LASER_MASK EQU MAX_LASERS - 1
-LASER_OFFSCREEN EQU -36
-LASER_TILE      EQU 4
+MAX_LASERS          EQU 4
+ALL_LASERS_FIRED    EQU %00001111
+LASER_TILE          EQU 4
 
 SECTION "LaserRAM", WRAM0
 
-LaserXs:    DS MAX_LASERS
-LaserYs:    DS MAX_LASERS
-LaserCnt:   DS 1
-NextLaser:  DS 1
+LaserXs:        DS MAX_LASERS
+LaserYs:        DS MAX_LASERS
+NextLaser:      DS 1
+ActiveLasers:   DS 1
 
 SECTION "Laser", ROM0
 
@@ -24,7 +23,7 @@ InitLaserXs:    LD HL, LaserXs
                 RET
 
 InitLaserYs:    LD HL, LaserYs
-                LD A, LASER_OFFSCREEN
+                LD A, -16
                 LD B, MAX_LASERS
 .loop           LD [HLI], A
                 DEC B
@@ -34,8 +33,7 @@ InitLaserYs:    LD HL, LaserYs
 InitLasers::    CALL InitLaserXs
                 CALL InitLaserYs
                 XOR A
-                LD [LaserCnt], A
-                LD [NextLaser], A
+                LD [ActiveLasers], A
                 RET
 
 SetupLaserYsOAM:    LD DE, ShadowOAM+36
@@ -77,11 +75,44 @@ SetupLasersOAM::    CALL SetupLaserYsOAM
                     CALL SetupLaserTilesOAM
                     RET
 
-FireLaser:: LD HL, LaserCnt
+FindNextLaser:  LD A, [ActiveLasers]
+                LD HL, NextLaser
+                LD [HL], 0
+.loop           RRCA
+                RET NC
+                INC [HL]
+                JR .loop
+
+; A contains laser to be marked
+MarkLaser:  LD B, 1
+            AND A
+            JR Z, .done
+.loop       SLA B
+            DEC A
+            JR NZ, .loop
+.done       LD HL, ActiveLasers
             LD A, [HL]
-            CP MAX_LASERS
+            OR B
+            LD [HL], A
+            RET
+
+; A contains laser to be cleared
+ClearLaser: LD B, ~1
+            AND A
+            JR Z, .done
+.loop       RLC B
+            DEC A
+            JR NZ, .loop
+.done       LD HL, ActiveLasers
+            LD A, [HL]
+            AND B
+            LD [HL], A
+            RET
+
+FireLaser:: LD A, [ActiveLasers]
+            CP ALL_LASERS_FIRED
             RET Z
-            INC [HL]
+            CALL FindNextLaser
             LD A, [NextLaser]
             LD HL, LaserYs
             ADD L
@@ -94,29 +125,37 @@ FireLaser:: LD HL, LaserCnt
             LD A, [PaddleX+1]
             ADD PADDLE_WIDTH/2 - 4
             LD [HL], A
-            LD HL, NextLaser
-            LD A, [HL]
-            INC A
-            AND NEXT_LASER_MASK
-            LD [HL], A
+            LD A, [NextLaser]
+            CALL MarkLaser
             RET
 
 UpdateLasers::  LD HL, LaserYs
-                LD B, MAX_LASERS
-.loop           LD A, [HL]
-                CP LASER_OFFSCREEN
+                LD B, 0
+                LD A, [ActiveLasers]
+                LD C, A
+.loop           ; check to see if this laser is active
+                BIT 0, C
                 JR Z, .next
-                CP 144
-                JR C, .update
-                CP 256 - LASER_HEIGHT
-                LD [HL], LASER_OFFSCREEN
-                LD A, [LaserCnt]
-                DEC A
-                LD [LaserCnt], A
-                JR .next
-.update         SUB 2
+                ; update laser position
+                LD A, [HL]
+                SUB 2
                 LD [HL], A
-.next           INC L
-                DEC B
+                ; check to see if this laser is now off-screen
+                CP 144
+                JR C, .next
+                CP 256 - LASER_HEIGHT
+                JR NC, .next
+                ; mark this laser as inactive
+                LD A, B
+                PUSH BC
+                PUSH HL
+                CALL ClearLaser
+                POP HL
+                POP BC
+.next           SRL C           ; move ActiveLaser mask down
+                INC L
+                INC B
+                LD A, B
+                CP MAX_LASERS
                 JR NZ, .loop
                 RET
