@@ -15,6 +15,7 @@ VBlank: PUSH AF
         LD H, [HL]
         LD L, A
         CALL RunHandler
+        CALL OAMDMA
         LD A, 1
         LD [VBlankFlag], A
         POP HL

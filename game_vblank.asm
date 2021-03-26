@@ -20,7 +20,6 @@ VBlank: CALL EnableSprites
         LD A, [StatusDirty]
         AND A
         CALL NZ, CopyStatus
-        CALL OAMDMA
         XOR A
         LD [VRAMUpdateLen], A
         LD [StatusDirty], A

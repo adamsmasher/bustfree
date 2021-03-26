@@ -44,6 +44,7 @@ GameOver:   LD HL, GameOverTimer
             RET NZ
             CALL TurnOffScreen
             CALL ClearVRAM
+            CALL ClearOAM
             CALL StartTitleScreen
             RET
 
