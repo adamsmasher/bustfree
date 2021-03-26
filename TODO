@@ -8,7 +8,6 @@ OFF STREAM
 
 * (UGH) fix bug where high X/Y ball positions are "negative"?
 * sound + music
-* ugh undo ring buffer stuff
 * disabled LCD outside of vblank when starting game?
 * make sure to clear OAM on new game after game over?
 * clear power up state when you lose a life
