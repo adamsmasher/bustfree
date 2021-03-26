@@ -83,31 +83,18 @@ FindNextLaser:  LD A, [ActiveLasers]
                 INC [HL]
                 JR .loop
 
-; A contains laser to be marked
-MarkLaser:  LD B, 1
-            AND A
-            JR Z, .done
-.loop       SLA B
-            DEC A
-            JR NZ, .loop
-.done       LD HL, ActiveLasers
-            LD A, [HL]
-            OR B
-            LD [HL], A
-            RET
-
-; A contains laser to be cleared
-ClearLaser: LD B, ~1
-            AND A
-            JR Z, .done
-.loop       RLC B
-            DEC A
-            JR NZ, .loop
-.done       LD HL, ActiveLasers
-            LD A, [HL]
-            AND B
-            LD [HL], A
-            RET
+MarkNextLaser:  LD A, [NextLaser]
+                LD B, 1
+                AND A
+                JR Z, .done
+.loop           SLA B
+                DEC A
+                JR NZ, .loop
+.done           LD HL, ActiveLasers
+                LD A, [HL]
+                OR B
+                LD [HL], A
+                RET
 
 FireLaser:: LD A, [ActiveLasers]
             CP ALL_LASERS_FIRED
@@ -125,37 +112,47 @@ FireLaser:: LD A, [ActiveLasers]
             LD A, [PaddleX+1]
             ADD PADDLE_WIDTH/2 - 4
             LD [HL], A
-            LD A, [NextLaser]
-            CALL MarkLaser
+            CALL MarkNextLaser
             RET
 
-UpdateLasers::  LD HL, LaserYs
-                LD B, 0
-                LD A, [ActiveLasers]
-                LD C, A
-.loop           ; check to see if this laser is active
-                BIT 0, C
-                JR Z, .next
-                ; update laser position
-                LD A, [HL]
-                SUB 2
-                LD [HL], A
-                ; check to see if this laser is now off-screen
-                CP 144
-                JR C, .next
-                CP 256 - LASER_HEIGHT
-                JR NC, .next
-                ; mark this laser as inactive
-                LD A, B
-                PUSH BC
-                PUSH HL
-                CALL ClearLaser
-                POP HL
-                POP BC
-.next           SRL C           ; move ActiveLaser mask down
-                INC L
-                INC B
-                LD A, B
-                CP MAX_LASERS
-                JR NZ, .loop
+UpdateLasers::  CALL MoveLasers
+                CALL ClearInactiveLasers
                 RET
+
+ClearInactiveLasers:    LD HL, LaserYs + MAX_LASERS - 1
+                        LD B, MAX_LASERS
+                        LD C, $FF
+.loop                   ; check to see if this laser is now off-screen
+                        LD A, [HLD]
+                        CP 144
+                        JR C, .next
+                        CP 256 - LASER_HEIGHT
+                        JR NC, .next
+                        ; mark this laser as inactive
+                        RES 7, C
+.next                   RLC C
+                        DEC B
+                        JR NZ, .loop
+                        ; apply the mask
+                        LD HL, ActiveLasers
+                        LD A, [HL]
+                        AND C
+                        LD [HL], A
+                        RET
+
+MoveLasers: LD HL, LaserYs
+            LD B, MAX_LASERS
+            LD A, [ActiveLasers]
+            LD C, A
+.loop       ; check to see if this laser is active
+            BIT 0, C
+            JR Z, .next
+            ; update laser position
+            LD A, [HL]
+            SUB 2
+            LD [HL], A
+.next       SRL C           ; move ActiveLaser mask down
+            INC L
+            DEC B
+            JR NZ, .loop
+            RET
