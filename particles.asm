@@ -34,30 +34,37 @@ InitEffect::    CALL InitParticles
                 LD [EffectTimer], A
                 RET
 
-StartParticleXsAtBall:  LD A, [BallX+1]
-                        LD B, PARTICLES_PER_EFFECT
-                        LD HL, ParticleXs
-.loop                   LD [HLI], A
-                        DEC B
-                        JR NZ, .loop
-                        RET
+StartParticleXsAtHitBrick:  LD A, [HitBrickCol]
+                            ADD A
+                            ADD A
+                            ADD A
+                            ADD 8 + 16      ; account for OAM plus brick padding
+                            LD B, PARTICLES_PER_EFFECT
+                            LD HL, ParticleXs
+.loop                       LD [HLI], A
+                            DEC B
+                            JR NZ, .loop
+                            RET
 
-StartParticleYsAtBall:  LD A, [BallY+1]
-                        LD B, PARTICLES_PER_EFFECT
-                        LD HL, ParticleYs
-.loop                   LD [HLI], A
-                        DEC B
-                        JR NZ, .loop
-                        RET
+StartParticleYsAtHitBrick:  LD A, [HitBrickRow]
+                            ADD A
+                            ADD A
+                            ADD 16 + 16     ; account for OAM plus brick padding
+                            LD B, PARTICLES_PER_EFFECT
+                            LD HL, ParticleYs
+.loop                       LD [HLI], A
+                            DEC B
+                            JR NZ, .loop
+                            RET
 
-StartParticlesAtBall:   CALL StartParticleXsAtBall
-                        CALL StartParticleYsAtBall
-                        RET
+StartParticlesAtHitBrick:   CALL StartParticleXsAtHitBrick
+                            CALL StartParticleYsAtHitBrick
+                            RET
 
-StartEffectAtBall:: CALL StartParticlesAtBall
-                    LD A, 30
-                    LD [EffectTimer], A
-                    RET
+StartEffectAtHitBrick:: CALL StartParticlesAtHitBrick
+                        LD A, 30
+                        LD [EffectTimer], A
+                        RET
 
 UpdateParticleXs:   LD HL, ParticleXs
                     ; top left

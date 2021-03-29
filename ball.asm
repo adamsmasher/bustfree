@@ -143,7 +143,6 @@ UpdateBallRow:  LD A, [BallY+1]
                 ADD 4 - 16 - 16     ; account for ball center - OAM Y-offset - map start row
                 SRL A
                 SRL A
-                SRL A
                 LD [BallRow], A
                 RET
 

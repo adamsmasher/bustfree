@@ -3,9 +3,10 @@ INCLUDE "paddle.inc"
 INCLUDE "powerup.inc"
 
 SECTION "CollideRAM", WRAM0
-CollisionTile:      DS 1
-CollisionHandlers:  DS 2
-EnemyCollisionFlag: DS 1
+CollisionTile:: DS 1
+Collided::      DS 1
+HitBrickCol::   DS 1
+HitBrickRow::   DS 1
 
 SECTION "Collide", ROM0
 
@@ -93,20 +94,6 @@ CheckBottomCollide::    LD A, [BallY+1]
                         CALL DrawStatus
                         RET
 
-GetCollisionTile:   LD H, HIGH(StageMap)
-                    LD A, [BallRow]
-                    ; convert from row to row address
-                    SWAP A
-                    LD L, A
-                    LD A, [BallCol]
-                    ; add to row address to get tile pointer 
-                    ADD L
-                    LD L, A
-                    ; get tile
-                    LD A, [HL]
-                    LD [CollisionTile], A
-                    RET
-
 BounceY:    CALL ReflectBallY
             CALL ApplyBallVelocityY
             RET
@@ -119,120 +106,101 @@ DoNothing:  RET
 
 NormalBrickHandler: XOR A
                     LD [ReplacementBrick], A
-                    CALL ReplaceBrickAtBall
+                    CALL ReplaceHitBrick
                     CALL OnBrickDestroyed
-                    CALL SpeedUpBall
                     RET
 
-NormalBrickHandlerY:    CALL NormalBrickHandler
-                        LD A, [PowerUpState]
-                        CP SPIKE_POWERUP
-                        CALL NZ, BounceY
-                        RET
-
-NormalBrickHandlerX:    CALL NormalBrickHandler
-                        LD A, [PowerUpState]
-                        CP SPIKE_POWERUP
-                        CALL NZ, BounceX
-                        RET
-
-DoubleBrickHandler: LD A, 1
+DoubleBrickHandler: CALL FlashHitBrick
+                    LD A, 1
                     LD [ReplacementBrick], A
-                    CALL FlashBrickAtBall
-                    CALL ReplaceBrickAtBall
-                    CALL SpeedUpBall
+                    CALL ReplaceHitBrick
                     RET
 
-DoubleBrickHandlerY:    CALL DoubleBrickHandler
-                        CALL BounceY
-                        RET
-
-DoubleBrickHandlerX:    CALL DoubleBrickHandler
-                        CALL BounceX
-                        RET
-
-IndestructableBrickHandler: CALL FlashBrickAtBall
-                            CALL SpeedUpBall
+IndestructableBrickHandler: CALL FlashHitBrick
                             RET
 
-IndestructableBrickHandlerY: CALL IndestructableBrickHandler
-                             CALL BounceY
-                             RET
-
-IndestructableBrickHandlerX: CALL IndestructableBrickHandler
-                             CALL BounceX
-                             RET
-
-CollisionHandlersX: DW DoNothing
-                    DW NormalBrickHandlerX
-                    DW IndestructableBrickHandlerX
-                    DW DoubleBrickHandlerX
-
-CollisionHandlersY: DW DoNothing
-                    DW NormalBrickHandlerY
-                    DW IndestructableBrickHandlerY
-                    DW DoubleBrickHandlerY
-
-CheckStageCollide8x4Bottom: LD HL, CollisionTile
-                            LD A, [HL]
-                            AND $0F
-                            ADD A
-                            LD [HL], A
-                            JP InvokeCollisionHandler
-
-CheckStageCollide8x4Top:    LD HL, CollisionTile
-                            LD A, [HL]
-                            AND $F0
-                            SWAP A
-                            ADD A
-                            LD [HL], A
-                            JP InvokeCollisionHandler
-
-; A - contains the tile no for the collision
-InvokeCollisionHandler:     LD HL, CollisionHandlers
-                            LD A, [HLI]
-                            LD H, [HL]
-                            LD L, A
-                            LD A, [CollisionTile]
-                            ADD L
-                            LD L, A
-                            LD A, [HLI]
-                            LD H, [HL]
-                            LD L, A
-                            JP HL
-
-CheckStageCollide8x4:   CALL GetCollisionTile
-                        LD A, [BallY+1]
-                        ; get center of ball
-                        ADD 4
-                        AND %00000100
-                        JP NZ, CheckStageCollide8x4Bottom
-                        JP CheckStageCollide8x4Top
+CollisionHandlers:  DW DoNothing
+                    DW NormalBrickHandler
+                    DW IndestructableBrickHandler
+                    DW DoubleBrickHandler
 
 ; sets C if in bounds, NC otherwise
 CheckBallInBounds:  LD A, [BallRow]
                     ; check to make sure row is in bounds
-                    CP 8
+                    CP 16
                     RET NC
                     LD A, [BallCol]
                     ; check to make sure col is in bounds
                     CP 16
                     RET
 
-CheckStageCollideX::    CALL CheckBallInBounds
-                        RET NC
-                        LD HL, CollisionHandlers
-                        LD A, LOW(CollisionHandlersX)
-                        LD [HLI], A
-                        LD [HL], HIGH(CollisionHandlersX)
-                        CALL CheckStageCollide8x4
+CheckStageCollide:  CALL CheckBallInBounds
+                    RET NC
+                    LD A, [BallRow]
+                    LD [HitBrickRow], A
+                    LD A, [BallCol]
+                    LD [HitBrickCol], A
+                    CALL CheckForCollision
+                    LD A, [Collided]
+                    AND A
+                    RET Z
+                    LD A, [PowerUpState]
+                    CP SPIKE_POWERUP
+                    CALL NZ, SpeedUpBall
+                    RET
+
+CheckStageCollideY::    XOR A
+                        LD [Collided], A
+                        CALL CheckStageCollide 
+                        LD A, [Collided]
+                        AND A
+                        RET Z
+                        LD A, [PowerUpState]
+                        CP SPIKE_POWERUP 
+                        CALL NZ, BounceY
                         RET
 
-CheckStageCollideY::    CALL CheckBallInBounds
-                        RET NC
-                        LD HL, CollisionHandlers
-                        LD A, LOW(CollisionHandlersY)
-                        LD [HLI], A
-                        LD [HL], HIGH(CollisionHandlersY)
-                        CALL CheckStageCollide8x4
+CheckStageCollideX::    XOR A
+                        LD [Collided], A
+                        CALL CheckStageCollide 
+                        LD A, [Collided]
+                        AND A
+                        RET Z
+                        LD A, [PowerUpState]
+                        CP SPIKE_POWERUP 
+                        CALL NZ, BounceX
                         RET
+
+; checks if there's a brick at HitBrickRow & HitBrickCol
+; if so, the Collided flag is set and the collision handler for the brick is run
+CheckForCollision:: ; get tile
+                    LD H, HIGH(StageMap)
+                    LD A, [HitBrickRow]
+                    SRL A                   ; divide 4px row by 2 to get 8px row
+                    SWAP A
+                    LD L, A
+                    LD A, [HitBrickCol]
+                    ADD L
+                    LD L, A
+                    ; determine if we care about the top or bottom brick in the tile
+                    LD A, [HitBrickRow]
+                    RRCA
+                    ; get the collision tile
+                    LD A, [HL]
+                    LD [CollisionTile], A
+                    JR C, .checkTile
+                    SWAP A
+.checkTile          AND $0F
+                    ; if the bottom brick is empty, do nothing
+                    RET Z
+                    ; otherwise, invoke the handler for the brick
+                    LD HL, CollisionHandlers
+                    ADD A
+                    ADD L
+                    LD L, A
+                    LD A, [HLI]
+                    LD H, [HL]
+                    LD L, A
+                    LD A, 1
+                    LD [Collided], A
+                    JP HL

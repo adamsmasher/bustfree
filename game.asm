@@ -202,14 +202,15 @@ GameOver::  CALL WaitForVBlank
 
 SetupReplaceBrickTransfer:  ; compute destination and put in DE
                             LD D, $98
-                            LD A, [BallRow]
+                            LD A, [HitBrickRow]
+                            SRL A
                             ADD 2
                             SWAP A
-                            SLA A
+                            ADD A
                             LD E, A
                             JR NC, .nc
                             INC D
-.nc                         LD A, [BallCol]
+.nc                         LD A, [HitBrickCol]
                             ADD 2
                             ADD E
                             LD E, A
@@ -233,53 +234,40 @@ SetupReplaceBrickTransfer:  ; compute destination and put in DE
                             INC [HL]
                             RET
 
-; returns address in HL
-GetBallMapAddr: LD H, HIGH(StageMap)
-                LD A, [BallRow]
-                ; convert from row to row address
-                SWAP A
-                LD L, A
-                LD A, [BallCol]
-                ; add to row address to get tile pointer 
-                ADD L
-                LD L, A
-                RET
-
-GetTileAtBall:  CALL GetBallMapAddr
-                LD A, [HL]
-                LD [TileAtBall], A
-                RET
-
-GetReplacementTile: LD A, [BallY+1]
-                    ; get center of ball
-                    ADD 4
-                    AND %00000100
-                    LD A, [TileAtBall]
-                    JR Z, .top
-.bottom             AND $F0
-                    LD B, A
-                    LD A, [ReplacementBrick]
-                    JR .done
-.top                AND $0F
-                    LD B, A
-                    LD A, [ReplacementBrick]
-                    SWAP A
-.done               OR B
-                    LD [ReplacementTile], A
-                    RET
-
-ReplaceBrickAtBall::    CALL GetTileAtBall
-                        CALL GetReplacementTile
-                        CALL SetupReplaceBrickTransfer
-                        CALL ReplaceBrickOnStageMap
+; writes into ReplacementTile the result of replacing the hit brick with ReplacementBrick
+GetReplacementTile:     ; determine if we care about the top or the bottom
+                        LD A, [HitBrickRow]
+                        RRCA
+                        LD A, [ReplacementBrick]
+                        LD B, A
+                        LD A, [CollisionTile]
+                        JR C, .bottom
+.top                    SWAP B
+                        AND $0F
+                        JR .write
+.bottom                 AND $F0
+.write                  OR B
+                        LD [ReplacementTile], A
                         RET
 
-ReplaceBrickOnStageMap: CALL GetBallMapAddr
+ReplaceHitBrick::   CALL GetReplacementTile
+                    CALL SetupReplaceBrickTransfer
+                    CALL ReplaceBrickOnStageMap
+                    RET
+
+ReplaceBrickOnStageMap: LD H, HIGH(StageMap)
+                        LD A, [HitBrickRow]
+                        SRL A                   ; divide 4px row by 2 to get 8px row
+                        SWAP A
+                        LD L, A
+                        LD A, [HitBrickCol]
+                        ADD L
+                        LD L, A
                         LD A, [ReplacementTile]
                         LD [HL], A
                         RET
 
-OnBrickDestroyed::  CALL StartEffectAtBall
+OnBrickDestroyed::  CALL StartEffectAtHitBrick
                     CALL IncrementScore
                     LD A, [TotalBricks]
                     LD B, A

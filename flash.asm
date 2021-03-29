@@ -24,17 +24,20 @@ UpdateFlash::   LD HL, FlashTimer
                 CALL Z, InitFlash
                 RET
 
-FlashBrickAtBall::  LD A, [BallX+1]
-                    ADD 4
-                    AND $F8
-                    LD [FlashBrickX], A
-                    LD A, [BallY+1]
-                    ADD 4
-                    AND $FC
-                    LD [FlashBrickY], A
-                    LD A, 8
-                    LD [FlashTimer], A
-                    RET
+FlashHitBrick:: LD A, [HitBrickRow]
+                ADD A
+                ADD A
+                ADD 32
+                LD [FlashBrickY], A
+                LD A, [HitBrickCol]
+                ADD A
+                ADD A
+                ADD A
+                ADD 24
+                LD [FlashBrickX], A
+                LD A, 8
+                LD [FlashTimer], A
+                RET
 
 SetupFlashOAM:: LD HL, ShadowOAM+16
                 LD A, [FlashBrickY]
