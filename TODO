@@ -10,4 +10,3 @@ OFF STREAM
 * sound + music
 * disabled LCD outside of vblank when starting game?
 * configure editor to always use 4 space tabs and strip trailing whitespace
-* figure out weird crash with lasers

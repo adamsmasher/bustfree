@@ -128,7 +128,7 @@ CheckCurrentLaser:  ; get X position
                     LD L, A
                     LD A, [HL]
                     ; are we in bounds on the right?
-                    CP 152
+                    CP 148
                     RET NC
                     ; get column
                     SUB 20          ; account for OAM, padding, and the fact that we want to check the center
