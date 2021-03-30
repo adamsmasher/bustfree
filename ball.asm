@@ -63,6 +63,14 @@ ReflectBallX::  Reflect BallVelocityX
 ReflectBallY::  Reflect BallVelocityY
                 RET
 
+BounceY::   CALL ReflectBallY
+            CALL ApplyBallVelocityY
+            RET
+
+BounceX::   CALL ReflectBallX
+            CALL ApplyBallVelocityX
+            RET
+
 SpeedUpM:   MACRO
         LD HL, \1+1
         LD A, [HLD]
@@ -118,7 +126,7 @@ ApplyBallVelocityY::    ApplyVelocity BallVelocityY, BallY
 UpdateBallX:    CALL ApplyBallVelocityX
                 CALL CheckLeftCollide
                 CALL CheckRightCollide
-                CALL CheckStageCollideX
+                CALL CheckBallStageCollideX
                 RET
 
 AddBallSpin::   LD HL, PaddleVelocityX
@@ -158,7 +166,7 @@ UpdateBallY:    CALL ApplyBallVelocityY
                 CALL CheckPaddleCollide
                 CALL CheckTopCollide
                 CALL CheckBottomCollide
-                CALL CheckStageCollideY
+                CALL CheckBallStageCollideY
                 RET
 
 UpdateBall::    LD A, [BallState]

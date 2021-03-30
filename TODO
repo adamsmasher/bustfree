@@ -10,4 +10,4 @@ OFF STREAM
 * sound + music
 * disabled LCD outside of vblank when starting game?
 * clear power up state when you lose a life
-* move ball code collision detection into ball.asm
+* configure editor to always use 4 space tabs and strip trailing whitespace
