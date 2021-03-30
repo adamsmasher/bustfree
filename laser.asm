@@ -11,6 +11,7 @@ LaserXs:        DS MAX_LASERS
 LaserYs:        DS MAX_LASERS
 NextLaser:      DS 1
 ActiveLasers:   DS 1
+CurrentLaser:   DS 1
 
 SECTION "Laser", ROM0
 
@@ -116,8 +117,72 @@ FireLaser:: LD A, [ActiveLasers]
             RET
 
 UpdateLasers::  CALL MoveLasers
+                CALL CheckForCollisions
                 CALL ClearInactiveLasers
                 RET
+
+CheckCurrentLaser:  ; get X position
+                    LD HL, LaserXs
+                    LD A, [CurrentLaser]
+                    ADD L
+                    LD L, A
+                    LD A, [HL]
+                    ; are we in bounds on the right?
+                    CP 152
+                    RET NC
+                    ; get column
+                    SUB 20          ; account for OAM, padding, and the fact that we want to check the center
+                    RET C           ; return if we're not in bounds on the left
+                    SRL A
+                    SRL A
+                    SRL A
+                    LD [HitBrickCol], A
+                    ; get Y position
+                    LD HL, LaserYs
+                    LD A, [CurrentLaser]
+                    ADD L
+                    LD L, A
+                    LD A, [HL]
+                    ; are we in bounds on the bottom?
+                    CP 96
+                    RET NC
+                    ; get row
+                    SUB 32          ; return if we're not in bounds on the top
+                    RET C
+                    SRL A
+                    SRL A
+                    LD [HitBrickRow], A
+                    XOR A
+                    LD [Collided], A
+                    CALL CheckForCollision
+                    LD A, [Collided]
+                    AND A
+                    RET Z
+                    ; we collided, so move the laser off-screen - it'll get marked as inactive
+                    LD HL, LaserYs
+                    LD A, [CurrentLaser]
+                    ADD L
+                    LD L, A
+                    LD [HL], -16
+                    RET
+
+CheckForCollisions: XOR A
+                    LD [CurrentLaser], A
+                    LD A, [ActiveLasers]
+                    LD B, A
+.loop               BIT 0, B
+                    JR Z, .next
+                    PUSH BC
+                    CALL CheckCurrentLaser
+                    POP BC
+.next               SRL B
+                    LD HL, CurrentLaser
+                    LD A, [HL]
+                    INC A
+                    LD [HL], A
+                    CP MAX_LASERS
+                    JR NZ, .loop
+                    RET
 
 ClearInactiveLasers:    LD HL, LaserYs + MAX_LASERS - 1
                         LD B, MAX_LASERS
