@@ -1,3 +1,4 @@
+INCLUDE "ball.inc"
 INCLUDE "game.inc"
 INCLUDE "powerup.inc"
 
@@ -193,12 +194,23 @@ LevelComplete:  LD HL, CurrentStage
                 CALL TurnOnScreen
                 RET
 
-GameOver::  CALL WaitForVBlank
+GameOver:   CALL WaitForVBlank
             CALL TurnOffScreen
             CALL DisableWindowInterrupt
             CALL ClearVRAM
             CALL StartGameOver
             RET
+
+PlayerDie:: LD HL, NoOfLives
+            DEC [HL]
+            JP Z, GameOver
+            LD A, BALL_ON_PADDLE
+            LD [BallState], A
+            LD A, NO_POWERUP
+            LD [PowerUpState], A
+            CALL DrawStatus
+            RET
+
 
 SetupReplaceBrickTransfer:  ; compute destination and put in DE
                             LD D, $98

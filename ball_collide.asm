@@ -78,14 +78,7 @@ CheckTopCollide::   LD A, [BallY+1]
 
 CheckBottomCollide::    LD A, [BallY+1]
                         CP 160
-                        RET C
-                        ; we collided, so end game
-                        LD HL, NoOfLives
-                        DEC [HL]
-                        JP Z, GameOver
-                        LD A, BALL_ON_PADDLE
-                        LD [BallState], A
-                        CALL DrawStatus
+                        CALL NC, PlayerDie
                         RET
 
 ; sets C if in bounds, NC otherwise

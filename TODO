@@ -9,5 +9,5 @@ OFF STREAM
 * (UGH) fix bug where high X/Y ball positions are "negative"?
 * sound + music
 * disabled LCD outside of vblank when starting game?
-* clear power up state when you lose a life
 * configure editor to always use 4 space tabs and strip trailing whitespace
+* figure out weird crash with lasers
