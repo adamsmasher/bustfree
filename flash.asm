@@ -4,7 +4,7 @@ SECTION "FlashRAM", WRAM0
 
 FlashBrickX:    DS 1
 FlashBrickY:    DS 1
-FlashTimer:     DS 1    
+FlashTimer:     DS 1
 
 SECTION "Flash", ROM0
 
@@ -39,7 +39,7 @@ FlashHitBrick:: LD A, [HitBrickRow]
                 LD [FlashTimer], A
                 RET
 
-SetupFlashOAM:: LD HL, ShadowOAM+16
+SetupFlashOAM:: LD HL, ShadowOAM+24
                 LD A, [FlashBrickY]
                 LD [HLI], A
                 LD A, [FlashBrickX]

@@ -37,7 +37,7 @@ InitLasers::    CALL InitLaserXs
                 LD [ActiveLasers], A
                 RET
 
-SetupLaserYsOAM:    LD DE, ShadowOAM+36
+SetupLaserYsOAM:    LD DE, ShadowOAM+44
                     LD HL, LaserYs
                     LD B, MAX_LASERS
 .loop               LD A, [HLI]
@@ -49,7 +49,7 @@ SetupLaserYsOAM:    LD DE, ShadowOAM+36
                     JR NZ, .loop
                     RET
 
-SetupLaserXsOAM:    LD DE, ShadowOAM+36+1
+SetupLaserXsOAM:    LD DE, ShadowOAM+44+1
                     LD HL, LaserXs
                     LD B, MAX_LASERS
 .loop               LD A, [HLI]
@@ -61,7 +61,7 @@ SetupLaserXsOAM:    LD DE, ShadowOAM+36+1
                     JR NZ, .loop
                     RET
 
-SetupLaserTilesOAM: LD HL, ShadowOAM+36+2
+SetupLaserTilesOAM: LD HL, ShadowOAM+44+2
                     LD B, MAX_LASERS
 .loop               LD [HL], LASER_TILE
                     LD A, L

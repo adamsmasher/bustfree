@@ -117,7 +117,7 @@ SetupEffectOAM::    CALL SetupParticleXsOAM
                     CALL SetupParticleTilesOAM
                     RET
 
-SetupParticleXsOAM: LD DE, ShadowOAM+20+1
+SetupParticleXsOAM: LD DE, ShadowOAM+28+1
                     LD HL, ParticleXs
                     LD B, PARTICLES_PER_EFFECT
 .loop               LD A, [HLI]
@@ -129,7 +129,7 @@ SetupParticleXsOAM: LD DE, ShadowOAM+20+1
                     JR NZ, .loop
                     RET
 
-SetupParticleYsOAM: LD DE, ShadowOAM+20
+SetupParticleYsOAM: LD DE, ShadowOAM+28
                     LD HL, ParticleYs
                     LD B, PARTICLES_PER_EFFECT
 .loop               LD A, [HLI]
@@ -141,7 +141,7 @@ SetupParticleYsOAM: LD DE, ShadowOAM+20
                     JR NZ, .loop
                     RET
 
-SetupParticleTilesOAM:  LD HL, ShadowOAM+20+2
+SetupParticleTilesOAM:  LD HL, ShadowOAM+28+2
                         LD B, PARTICLES_PER_EFFECT
 .loop                   LD [HL], PARTICLE_TILE
                         LD A, L

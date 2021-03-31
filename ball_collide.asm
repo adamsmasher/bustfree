@@ -49,7 +49,9 @@ CheckPaddleCollide::    LD A, [BallY+1]
                         ADD (8 - BALL_WIDTH)/2
                         LD B, A
                         LD A, [PaddleX+1]
-                        ADD PADDLE_WIDTH
+                        LD C, A
+                        LD A, [PaddleWidthPixels]
+                        ADD C
                         CP B
                         RET C
                         ; we collided, so reflect and reposition

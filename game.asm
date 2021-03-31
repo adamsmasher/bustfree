@@ -1,5 +1,6 @@
 INCLUDE "ball.inc"
 INCLUDE "game.inc"
+INCLUDE "paddle.inc"
 INCLUDE "powerup.inc"
 
 WINDOW_Y        EQU 136
@@ -208,6 +209,10 @@ PlayerDie:: LD HL, NoOfLives
             LD [BallState], A
             LD A, NO_POWERUP
             LD [PowerUpState], A
+            LD A, 1
+            LD [PaddleWidthTiles], A
+            LD A, PADDLE_WIDTH
+            LD [PaddleWidthPixels], A
             CALL DrawStatus
             RET
 
