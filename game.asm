@@ -23,7 +23,6 @@ Score::             DS SCORE_BYTES
 TileAtBall:         DS 1
 ReplacementTile:    DS 1
 ReplacementBrick::  DS 1
-PowerUpState::      DS 1
 
 SECTION "Game", ROM0
 
@@ -91,11 +90,13 @@ DoPlaying:  CALL UpdateBall
             CALL UpdateFlash
             CALL UpdateEffect
             CALL UpdateLasers
+            CALL UpdatePowerUps
             CALL SetupBallOAM
             CALL SetupPaddleOAM
             CALL SetupFlashOAM
             CALL SetupEffectOAM
             CALL SetupLasersOAM
+            CALL SetupPowerUpOAM
             RET
 
 TurnOnScreen:   ; enable display
@@ -175,9 +176,8 @@ InitGame:   CALL InitBall
             CALL InitFlash
             CALL InitEffect
             CALL InitLasers
+            CALL InitPowerUps
             CALL InitStage
-            LD A, NO_POWERUP
-            LD [PowerUpState], A
             CALL GetReady
             RET
 
@@ -285,6 +285,8 @@ ReplaceBrickOnStageMap: LD H, HIGH(StageMap)
                         RET
 
 OnBrickDestroyed::  CALL StartEffectAtHitBrick
+                    ; TODO: do this randomly
+                    CALL SpawnExtendPowerUp
                     CALL IncrementScore
                     LD A, [TotalBricks]
                     LD B, A
