@@ -105,27 +105,45 @@ CheckBallStageCollide:  CALL CheckBallInBounds
                         RET Z
                         LD A, [PowerUpState]
                         CP SPIKE_POWERUP
-                        CALL NZ, SpeedUpBall
+                        JR Z, .speedUp
+                        LD A, [BrickDestroyed]
+                        AND A
+                        RET NZ
+.speedUp                CALL SpeedUpBall
                         RET
 
 CheckBallStageCollideY::    XOR A
                             LD [Collided], A
+                            LD [BrickDestroyed], A
                             CALL CheckBallStageCollide 
                             LD A, [Collided]
                             AND A
                             RET Z
                             LD A, [PowerUpState]
                             CP SPIKE_POWERUP 
-                            CALL NZ, BounceY
+                            JR NZ, .bounce
+                            ; if you have spike and brick wasn't destroyed, still bounce
+                            LD A, [BrickDestroyed]
+                            AND A
+                            RET NZ
+.bounce                     CALL BounceY
                             RET
 
 CheckBallStageCollideX::    XOR A
                             LD [Collided], A
+                            LD [BrickDestroyed], A
                             CALL CheckBallStageCollide 
                             LD A, [Collided]
                             AND A
                             RET Z
+                            LD A, [BrickDestroyed]
+                            AND A
+                            RET Z
                             LD A, [PowerUpState]
-                            CP SPIKE_POWERUP 
-                            CALL NZ, BounceX
+                            CP SPIKE_POWERUP
+                            JR NZ, .bounce
+                            LD A, [BrickDestroyed]
+                            AND A
+                            RET NZ
+.bounce                     CALL BounceX
                             RET

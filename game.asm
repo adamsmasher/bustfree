@@ -20,9 +20,9 @@ GameTimer:          DS 1
 NoOfLives::         DS 1
 BricksBroken::      DS 1
 Score::             DS SCORE_BYTES
-TileAtBall:         DS 1
 ReplacementTile:    DS 1
 ReplacementBrick::  DS 1
+BrickDestroyed::    DS 1
 
 SECTION "Game", ROM0
 
@@ -216,7 +216,6 @@ PlayerDie:: LD HL, NoOfLives
             CALL DrawStatus
             RET
 
-
 SetupReplaceBrickTransfer:  ; compute destination and put in DE
                             LD D, $98
                             LD A, [HitBrickRow]
@@ -284,6 +283,7 @@ ReplaceBrickOnStageMap: LD H, HIGH(StageMap)
                         LD [HL], A
                         RET
 
+; TODO: implement a better random number generator
 SpawnRandomPowerUp:     LDH A, [$04]
                         BIT 2, A
                         RET Z
@@ -298,6 +298,8 @@ SpawnRandomPowerUp:     LDH A, [$04]
 OnBrickDestroyed::  CALL StartEffectAtHitBrick
                     CALL SpawnRandomPowerUp
                     CALL IncrementScore
+                    LD A, 1
+                    LD [BrickDestroyed], A
                     LD A, [TotalBricks]
                     LD B, A
                     LD HL, BricksBroken
