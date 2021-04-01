@@ -284,9 +284,19 @@ ReplaceBrickOnStageMap: LD H, HIGH(StageMap)
                         LD [HL], A
                         RET
 
+SpawnRandomPowerUp:     LDH A, [$04]
+                        BIT 2, A
+                        RET Z
+                        AND $03
+                        RET Z                   ; TODO: when multiball is implemented, 0 should summon it
+                        CP %01
+                        JP Z, SpawnExtendPowerUp
+                        CP %10
+                        JP Z, SpawnLaserPowerUp
+                        JP SpawnSpikePowerUp
+
 OnBrickDestroyed::  CALL StartEffectAtHitBrick
-                    ; TODO: do this randomly
-                    CALL SpawnSpikePowerUp
+                    CALL SpawnRandomPowerUp
                     CALL IncrementScore
                     LD A, [TotalBricks]
                     LD B, A
