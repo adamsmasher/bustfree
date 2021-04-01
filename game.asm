@@ -286,7 +286,7 @@ ReplaceBrickOnStageMap: LD H, HIGH(StageMap)
 
 OnBrickDestroyed::  CALL StartEffectAtHitBrick
                     ; TODO: do this randomly
-                    CALL SpawnExtendPowerUp
+                    CALL SpawnSpikePowerUp
                     CALL IncrementScore
                     LD A, [TotalBricks]
                     LD B, A

@@ -69,6 +69,12 @@ ClearPowerUpState:: XOR A
                     LD [PaddleWidthPixels], A
                     RET
 
+StartPowerUpTimer:  LD HL, PowerUpTimer
+                    XOR A
+                    LD [HLI], A
+                    LD [HL], 3
+                    RET
+
 DoExtendPowerUp:    CALL ClearPowerUpState
                     LD A, EXTEND_POWERUP
                     LD [PowerUpState], A
@@ -76,11 +82,20 @@ DoExtendPowerUp:    CALL ClearPowerUpState
                     LD [PaddleWidthTiles], A
                     LD A, EXPANDED_PADDLE_WIDTH
                     LD [PaddleWidthPixels], A
-                    LD HL, PowerUpTimer
-                    XOR A
-                    LD [HLI], A
-                    LD [HL], 3
+                    CALL StartPowerUpTimer
                     RET
+
+DoLaserPowerUp: CALL ClearPowerUpState
+                LD A, LASER_POWERUP
+                LD [PowerUpState], A
+                CALL StartPowerUpTimer
+                RET
+
+DoSpikePowerUp: CALL ClearPowerUpState
+                LD A, SPIKE_POWERUP
+                LD [PowerUpState], A
+                CALL StartPowerUpTimer
+                RET
 
 UpdateExtendPowerUp:    LD A, [ExtendPowerUpY]
                         AND A
@@ -112,9 +127,70 @@ UpdateExtendPowerUp:    LD A, [ExtendPowerUpY]
                         LD [ExtendPowerUpY], A
                         RET
 
+UpdateLaserPowerUp: LD A, [LaserPowerUpY]
+                    AND A
+                    RET Z
+                    ; move
+                    LD HL, LaserPowerUpY
+                    LD A, [HL]
+                    INC A
+                    LD [HL], A
+                    ; check for collision
+                    ADD 4
+                    CP PADDLE_Y
+                    RET C
+                    CP PADDLE_Y + PADDLE_HEIGHT
+                    RET NC
+                    LD A, [LaserPowerUpX]
+                    ADD 4
+                    LD B, A
+                    LD A, [PaddleX+1]
+                    CP B
+                    RET NC
+                    LD C, A
+                    LD A, [PaddleWidthPixels]
+                    ADD C
+                    CP B
+                    RET C
+                    CALL DoLaserPowerUp
+                    XOR A
+                    LD [LaserPowerUpY], A
+                    RET
+
+UpdateSpikePowerUp: LD A, [SpikePowerUpY]
+                    AND A
+                    RET Z
+                    ; move
+                    LD HL, SpikePowerUpY
+                    LD A, [HL]
+                    INC A
+                    LD [HL], A
+                    ; check for collision
+                    ADD 4
+                    CP PADDLE_Y
+                    RET C
+                    CP PADDLE_Y + PADDLE_HEIGHT
+                    RET NC
+                    LD A, [SpikePowerUpX]
+                    ADD 4
+                    LD B, A
+                    LD A, [PaddleX+1]
+                    CP B
+                    RET NC
+                    LD C, A
+                    LD A, [PaddleWidthPixels]
+                    ADD C
+                    CP B
+                    RET C
+                    CALL DoSpikePowerUp
+                    XOR A
+                    LD [SpikePowerUpY], A
+                    RET
+
 SpawnExtendPowerUp::    ; don't spawn if we're already extended
                         LD A, [PowerUpState]
                         CP EXTEND_POWERUP
+                        RET Z
                         ; don't spawn if we're already onscreen
                         LD A, [ExtendPowerUpY]
                         AND A
@@ -132,6 +208,50 @@ SpawnExtendPowerUp::    ; don't spawn if we're already extended
                         ADD 24
                         LD [ExtendPowerUpX], A
                         RET
+
+SpawnLaserPowerUp:: ; don't spawn if we're already extended
+                    LD A, [PowerUpState]
+                    CP LASER_POWERUP
+                    RET Z
+                    ; don't spawn if we're already onscreen
+                    LD A, [LaserPowerUpY]
+                    AND A
+                    RET NZ
+                    ; spawn at hit brick location
+                    LD A, [HitBrickRow]
+                    ADD A
+                    ADD A
+                    ADD 32
+                    LD [LaserPowerUpY], A
+                    LD A, [HitBrickCol]
+                    ADD A
+                    ADD A
+                    ADD A
+                    ADD 24
+                    LD [LaserPowerUpX], A
+                    RET
+
+SpawnSpikePowerUp:: ; don't spawn if we're already extended
+                    LD A, [PowerUpState]
+                    CP SPIKE_POWERUP
+                    RET Z
+                    ; don't spawn if we're already onscreen
+                    LD A, [SpikePowerUpY]
+                    AND A
+                    RET NZ
+                    ; spawn at hit brick location
+                    LD A, [HitBrickRow]
+                    ADD A
+                    ADD A
+                    ADD 32
+                    LD [SpikePowerUpY], A
+                    LD A, [HitBrickCol]
+                    ADD A
+                    ADD A
+                    ADD A
+                    ADD 24
+                    LD [SpikePowerUpX], A
+                    RET
 
 UpdatePowerUpTimer: LD A, [PowerUpState]
                     AND A
@@ -152,8 +272,8 @@ UpdatePowerUpTimer: LD A, [PowerUpState]
 
 UpdatePowerUps::    CALL UpdatePowerUpTimer
                     CALL UpdateExtendPowerUp
-                    ;CALL UpdateLaserPowerUp
-                    ;CALL UpdateSpikePowerUp
+                    CALL UpdateLaserPowerUp
+                    CALL UpdateSpikePowerUp
                     ;CALL UpdateMultiballPowerUp
                     RET
 
